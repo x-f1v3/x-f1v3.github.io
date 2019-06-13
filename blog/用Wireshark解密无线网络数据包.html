@@ -1,0 +1,563 @@
+<!DOCTYPE html>
+<html lang="zh-Hans">
+<head><meta name="generator" content="Hexo 3.8.0">
+
+    <!--[if lt IE 9]>
+        <style>body {display: none; background: none !important} </style>
+        <meta http-equiv="Refresh" Content="0; url=//outdatedbrowser.com/" />
+    <![endif]-->
+
+<meta charset="utf-8">
+<meta http-equiv="X-UA-Compatible" content="IE=edge, chrome=1">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no">
+<meta name="format-detection" content="telephone=no">
+<meta name="author" content="F1v3">
+
+
+
+<meta name="description" content="当知道WIFI密码时，不需要直接连接WIFI，就可以抓取数据包">
+<meta name="keywords" content="Wireshark">
+<meta property="og:type" content="article">
+<meta property="og:title" content="用Wireshark解密无线网络数据包">
+<meta property="og:url" content="http://x-f1v3.github.io/blog/用Wireshark解密无线网络数据包.html">
+<meta property="og:site_name" content="F1v3&#39;s Notes">
+<meta property="og:description" content="当知道WIFI密码时，不需要直接连接WIFI，就可以抓取数据包">
+<meta property="og:locale" content="zh-Hans">
+<meta property="og:image" content="http://x-f1v3.github.io/images/1507603437995.png">
+<meta property="og:image" content="http://x-f1v3.github.io/images/1507603809852.png">
+<meta property="og:image" content="http://x-f1v3.github.io/images/1507604261098.png">
+<meta property="og:image" content="http://x-f1v3.github.io/images/1507604503916.png">
+<meta property="og:image" content="http://x-f1v3.github.io/images/1507604713429.png">
+<meta property="og:image" content="http://x-f1v3.github.io/images/1507604764354.png">
+<meta property="og:image" content="http://x-f1v3.github.io/images/1507604829814.png">
+<meta property="og:image" content="http://x-f1v3.github.io/images/1507604874447.png">
+<meta property="og:image" content="http://x-f1v3.github.io/images/1507612001366.png">
+<meta property="og:updated_time" content="2019-06-13T05:39:31.989Z">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:title" content="用Wireshark解密无线网络数据包">
+<meta name="twitter:description" content="当知道WIFI密码时，不需要直接连接WIFI，就可以抓取数据包">
+<meta name="twitter:image" content="http://x-f1v3.github.io/images/1507603437995.png">
+
+<link rel="apple-touch-icon" href="/apple-touch-icon.png">
+
+
+    <link rel="alternate" href="/atom.xml" title="F1v3&#39;s Notes" type="application/atom+xml">
+
+
+
+    <link rel="shortcut icon" href="/favicon.png">
+
+
+
+    <link href="//cdn.bootcss.com/animate.css/3.5.1/animate.min.css" rel="stylesheet">
+
+
+
+    <link href="//cdn.bootcss.com/fancybox/2.1.5/jquery.fancybox.min.css" rel="stylesheet">
+
+
+
+    <script src="//cdn.bootcss.com/pace/1.0.2/pace.min.js"></script>
+    <link href="//cdn.bootcss.com/pace/1.0.2/themes/blue/pace-theme-minimal.css" rel="stylesheet">
+
+
+<link rel="stylesheet" href="/css/style.css">
+
+
+
+<link href="//cdn.bootcss.com/font-awesome/4.6.3/css/font-awesome.min.css" rel="stylesheet">
+
+
+<title>用Wireshark解密无线网络数据包 | F1v3&#39;s Notes</title>
+
+<script src="//cdn.bootcss.com/jquery/2.2.4/jquery.min.js"></script>
+<script src="//cdn.bootcss.com/clipboard.js/1.5.10/clipboard.min.js"></script>
+
+<script>
+    var yiliaConfig = {
+        fancybox: true,
+        animate: true,
+        isHome: false,
+        isPost: true,
+        isArchive: false,
+        isTag: false,
+        isCategory: false,
+        fancybox_js: "//cdn.bootcss.com/fancybox/2.1.5/jquery.fancybox.min.js",
+        scrollreveal: "//cdn.bootcss.com/scrollReveal.js/3.1.4/scrollreveal.min.js",
+        search: false
+    }
+</script>
+
+
+    <script> yiliaConfig.jquery_ui = [false]; </script>
+
+
+
+    <script> yiliaConfig.rootUrl = "\/";</script>
+
+
+
+
+
+
+</head></html>
+<body>
+  <div id="container">
+    <div class="left-col">
+    <div class="overlay"></div>
+<div class="intrude-less">
+    <header id="header" class="inner">
+        <a href="/" class="profilepic">
+            <img src="/img/avatar.png" class="animated zoomIn">
+        </a>
+        <hgroup>
+          <h1 class="header-author"><a href="/">F1v3</a></h1>
+        </hgroup>
+
+        
+
+        
+
+
+        
+            <div id="switch-btn" class="switch-btn">
+                <div class="icon">
+                    <div class="icon-ctn">
+                        <div class="icon-wrap icon-house" data-idx="0">
+                            <div class="birdhouse"></div>
+                            <div class="birdhouse_holes"></div>
+                        </div>
+                        <div class="icon-wrap icon-ribbon hide" data-idx="1">
+                            <div class="ribbon"></div>
+                        </div>
+                        
+                        <div class="icon-wrap icon-link hide" data-idx="2">
+                            <div class="loopback_l"></div>
+                            <div class="loopback_r"></div>
+                        </div>
+                        
+                        
+                        <div class="icon-wrap icon-me hide" data-idx="3">
+                            <div class="user"></div>
+                            <div class="shoulder"></div>
+                        </div>
+                        
+                    </div>
+                    
+                </div>
+                <div class="tips-box hide">
+                    <div class="tips-arrow"></div>
+                    <ul class="tips-inner">
+                        <li>菜单</li>
+                        <li>标签</li>
+                        
+                        <li>友情链接</li>
+                        
+                        
+                        <li>关于我</li>
+                        
+                    </ul>
+                </div>
+            </div>
+        
+
+        <div id="switch-area" class="switch-area">
+            <div class="switch-wrap">
+                <section class="switch-part switch-part1">
+                    <nav class="header-menu">
+                        <ul>
+                        
+                            <li><a href="/">主页</a></li>
+                        
+                            <li><a href="/archives/">所有文章</a></li>
+                        
+                            <li><a href="/tags/">标签云</a></li>
+                        
+                            <li><a href="/about/">关于我</a></li>
+                        
+                        </ul>
+                    </nav>
+                    <nav class="header-nav">
+                        <ul class="social">
+                            
+                                <a class="fa Email" href="mailto:123@123.com" title="Email"></a>
+                            
+                                <a class="fa GitHub" href="#" title="GitHub"></a>
+                            
+                                <a class="fa RSS" href="/atom.xml" title="RSS"></a>
+                            
+                        </ul>
+                    </nav>
+                </section>
+                
+                
+                <section class="switch-part switch-part2">
+                    <div class="widget tagcloud" id="js-tagcloud">
+                        <ul class="tag-list"><li class="tag-list-item"><a class="tag-list-link" href="/tags/Centos/">Centos</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/Hexo/">Hexo</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/JS/">JS</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/Java/">Java</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/POC/">POC</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/SpringBoot/">SpringBoot</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/Struts2/">Struts2</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/Weblogic/">Weblogic</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/Wireshark/">Wireshark</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/上传/">上传</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/书籍/">书籍</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/代码审计/">代码审计</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/日常/">日常</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/木马/">木马</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/漏洞/">漏洞</a></li></ul>
+                    </div>
+                </section>
+                
+                
+                
+                <section class="switch-part switch-part3">
+                    <div id="js-friends">
+                    
+                      <a class="main-nav-link switch-friends-link" href="https://hexo.io">Hexo</a>
+                    
+                      <a class="main-nav-link switch-friends-link" href="https://pages.github.com/">GitHub</a>
+                    
+                      <a class="main-nav-link switch-friends-link" href="http://moxfive.xyz/">MOxFIVE</a>
+                    
+                    </div>
+                </section>
+                
+
+                
+                
+                <section class="switch-part switch-part4">
+                
+                    <div id="js-aboutme">专注于前端</div>
+                </section>
+                
+            </div>
+        </div>
+    </header>                
+</div>
+    </div>
+    <div class="mid-col">
+      <nav id="mobile-nav">
+      <div class="overlay">
+          <div class="slider-trigger"></div>
+          <h1 class="header-author js-mobile-header hide"><a href="/" title="回到主页">F1v3</a></h1>
+      </div>
+    <div class="intrude-less">
+        <header id="header" class="inner">
+            <a href="/" class="profilepic">
+                <img src="/img/avatar.png" class="animated zoomIn">
+            </a>
+            <hgroup>
+              <h1 class="header-author"><a href="/" title="回到主页">F1v3</a></h1>
+            </hgroup>
+            
+            <nav class="header-menu">
+                <ul>
+                
+                    <li><a href="/">主页</a></li>
+                
+                    <li><a href="/archives/">所有文章</a></li>
+                
+                    <li><a href="/tags/">标签云</a></li>
+                
+                    <li><a href="/about/">关于我</a></li>
+                
+                <div class="clearfix"></div>
+                </ul>
+            </nav>
+            <nav class="header-nav">
+                        <ul class="social">
+                            
+                                <a class="fa Email" target="_blank" href="mailto:123@123.com" title="Email"></a>
+                            
+                                <a class="fa GitHub" target="_blank" href="#" title="GitHub"></a>
+                            
+                                <a class="fa RSS" target="_blank" href="/atom.xml" title="RSS"></a>
+                            
+                        </ul>
+            </nav>
+        </header>                
+    </div>
+    <link class="menu-list" tags="标签" friends="友情链接" about="关于我">
+</nav>
+      <div class="body-wrap"><article id="post-用Wireshark解密无线网络数据包" class="article article-type-post" itemscope itemprop="blogPost">
+  
+    <div class="article-meta">
+      <a href="/blog/用Wireshark解密无线网络数据包.html" class="article-date">
+      <time datetime="2017-10-10T02:35:24.000Z" itemprop="datePublished">2017-10-10</time>
+</a>
+
+
+    </div>
+  
+  <div class="article-inner">
+    
+      <input type="hidden" class="isFancy">
+    
+    
+      <header class="article-header">
+        
+  
+    <h1 class="article-title" itemprop="name">
+      用Wireshark解密无线网络数据包
+    </h1>
+  
+
+      </header>
+      
+      <div class="article-info article-info-post">
+        
+    <div class="article-category tagcloud">
+    <a class="article-category-link" href="/categories/无线/">无线</a>
+    </div>
+
+
+        
+    <div class="article-tag tagcloud">
+        <ul class="article-tag-list"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/Wireshark/">Wireshark</a></li></ul>
+    </div>
+
+        <div class="clearfix"></div>
+      </div>
+      
+    
+
+
+    <div class="article-entry" itemprop="articleBody">
+      
+          
+
+
+        <p>当知道WIFI密码时，不需要直接连接WIFI，就可以抓取数据包<br><a id="more"></a></p>
+<h3 id="抓取数据包"><a href="#抓取数据包" class="headerlink" title="抓取数据包"></a>抓取数据包</h3><p>开启网卡的监听模式<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">airmon-ng start wlan0</span><br></pre></td></tr></table></figure></p>
+<p><img src="http://x-f1v3.github.io/images/1507603437995.png" alt="image"></p>
+<p>抓取指定AP的网络数据包<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">airodump-ng -c 11 -w xyw --bssid 36:DE:1A:98:F6:2A wlan0mon --output-format pcap</span><br></pre></td></tr></table></figure></p>
+<p>这里<code>--output-format</code>是输出文件的文件格式<br><img src="http://x-f1v3.github.io/images/1507603809852.png" alt="image"></p>
+<p><strong> 需要注意是，在抓的包中必须要有握手包，可以慢慢等，也可以进行洪水攻击 </strong></p>
+<p>使用洪水攻击使其掉线，然后抓握手包<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">aireplay-ng -0 10 -a 36:DE:1A:98:F6:2A  -c 14:F6:5A:A1:37:97 wlan0mon</span><br></pre></td></tr></table></figure></p>
+<p><img src="http://x-f1v3.github.io/images/1507604261098.png" alt="image"></p>
+<p>再等上一段时间，就停止抓包。</p>
+<h3 id="解密数据包"><a href="#解密数据包" class="headerlink" title="解密数据包"></a>解密数据包</h3><p>刚抓到的数据包用Wireshark打开的话，是看不到具体的东西的需要解密。</p>
+<p>打开Wireshark后，先在<code>Edit-&gt;preference-&gt;protocols-&gt;IEEE 802.11</code>中启动<code>Enable decryption</code><br><img src="http://x-f1v3.github.io/images/1507604503916.png" alt="image"></p>
+<p>然后点上<code>view-&gt;Wireless Toolbar</code>，就会在后面出现<code>Decryptions Keys</code><br><img src="http://x-f1v3.github.io/images/1507604713429.png" alt="image"></p>
+<p>点击这个<code>Decryptions Keys</code>，输入密码和SSID，然后点击apply,ok<br><img src="http://x-f1v3.github.io/images/1507604764354.png" alt="image"></p>
+<p>最后<code>view-&gt;reload</code>,就可以看到里面具体的数据了<br><img src="http://x-f1v3.github.io/images/1507604829814.png" alt="image"><br><img src="http://x-f1v3.github.io/images/1507604874447.png" alt="image"></p>
+<h3 id="命令行"><a href="#命令行" class="headerlink" title="命令行"></a>命令行</h3><p>可以使用命令行直接解包<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">wireshark -r xyw-02.cap -o wlan.enable_decryption:TRUE -o wlan.wep_key1:wpa-pwd:12345678:xyw</span><br></pre></td></tr></table></figure></p>
+<p><code>-r</code> 后面接要打开的数据包 <code>-o</code>参数是要改变preference里面的设置</p>
+<p><strong> 不过这是早期版本的Wireshark可以用 ，较新的版本里都不能使用</strong></p>
+<p>新版本可以试下<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">wireshark -r xyw-02.cap -o wlan.enable_decryption:TRUE -o &quot;uat:80211_keys:\&quot;wpa-pwd\&quot;,\&quot; 12345678:xyw\&quot;&quot;</span><br></pre></td></tr></table></figure></p>
+<p>自己测试是成功的</p>
+<p><img src="http://x-f1v3.github.io/images/1507612001366.png" alt="image"></p>
+<h3 id="参考"><a href="#参考" class="headerlink" title="参考"></a>参考</h3><ul>
+<li><a href="http://www.lovemytool.com/blog/2010/05/wireshark-and-tshark-decrypt-sample-capture-file-by-joke-snelders.html" target="_blank" rel="noopener">http://www.lovemytool.com/blog/2010/05/wireshark-and-tshark-decrypt-sample-capture-file-by-joke-snelders.html</a></li>
+<li><a href="https://wiki.wireshark.org/HowToDecrypt802.11" target="_blank" rel="noopener">https://wiki.wireshark.org/HowToDecrypt802.11</a></li>
+<li><a href="https://ask.wireshark.org/questions/24249/decrypt-wpa-with-tshark" target="_blank" rel="noopener">https://ask.wireshark.org/questions/24249/decrypt-wpa-with-tshark</a></li>
+</ul>
+
+
+
+
+        
+      
+    </div>
+
+
+    
+  </div>
+  
+    
+    <div class="copyright">
+        <p><span>本文标题:</span><a href="/blog/用Wireshark解密无线网络数据包.html">用Wireshark解密无线网络数据包</a></p>
+        <p><span>文章作者:</span><a href="/" title="回到主页">F1v3</a></p>
+        <p><span>发布时间:</span>2017-10-10, 10:35:24</p>
+        <p><span>最后更新:</span>2019-06-13, 13:39:31</p>
+        <p>
+            <span>原始链接:</span><a class="post-url" href="/blog/用Wireshark解密无线网络数据包.html" title="用Wireshark解密无线网络数据包">http://x-f1v3.github.io/blog/用Wireshark解密无线网络数据包.html</a>
+            <span class="copy-path" data-clipboard-text="原文: http://x-f1v3.github.io/blog/用Wireshark解密无线网络数据包.html　　作者: F1v3" title="点击复制文章链接"><i class="fa fa-clipboard"></i></span>
+            <script> var clipboard = new Clipboard('.copy-path'); </script>
+        </p>
+        <p>
+            <span>许可协议:</span><i class="fa fa-creative-commons"></i> <a rel="license" href="http://creativecommons.org/licenses/by-nc-sa/4.0/" title="CC BY-NC-SA 4.0 International" target="_blank">"署名-非商用-相同方式共享 4.0"</a> 转载请保留原文链接及作者。
+        </p>
+    </div>
+
+
+
+    <nav id="article-nav">
+        
+            <div id="article-nav-newer" class="article-nav-title">
+                <a href="/blog/1511748171281.html">
+                    Centos搭建Weblogic容器
+                </a>
+            </div>
+        
+        
+            <div id="article-nav-older" class="article-nav-title">
+                <a href="/blog/1505542002394.html">
+                    推荐书籍
+                </a>
+            </div>
+        
+    </nav>
+
+  
+</article>
+
+    <div id="toc" class="toc-article">
+        <strong class="toc-title">文章目录</strong>
+        
+            <ol class="toc"><li class="toc-item toc-level-3"><a class="toc-link" href="#抓取数据包"><span class="toc-number">1.</span> <span class="toc-text">抓取数据包</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#解密数据包"><span class="toc-number">2.</span> <span class="toc-text">解密数据包</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#命令行"><span class="toc-number">3.</span> <span class="toc-text">命令行</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#参考"><span class="toc-number">4.</span> <span class="toc-text">参考</span></a></li></ol>
+        
+    </div>
+    <style>
+        .left-col .switch-btn,
+        .left-col .switch-area {
+            display: none;
+        }
+        .toc-level-6 i,
+        .toc-level-6 ol {
+            display: none !important;
+        }
+    </style>
+
+    <input type="button" id="tocButton" value="隐藏目录" title="点击按钮隐藏或者显示文章目录">
+
+    <script>
+        yiliaConfig.toc = ["隐藏目录", "显示目录", !!"false"];
+    </script>
+
+
+
+    
+<div class="share">
+    
+        <div class="bdsharebuttonbox">
+            <a href="#" class="fa fa-twitter bds_twi" data-cmd="twi" title="分享到推特"></a>
+            <a href="#" class="fa fa-weibo bds_tsina" data-cmd="tsina" title="分享到新浪微博"></a>
+            <a href="#" class="fa fa-qq bds_sqq" data-cmd="sqq" title="分享给 QQ 好友"></a>
+            <a href="#" class="fa fa-files-o bds_copy" data-cmd="copy" title="复制网址"></a>
+            <a href="#" class="fa fa fa-envelope-o bds_mail" data-cmd="mail" title="通过邮件分享"></a>
+            <a href="#" class="fa fa-weixin bds_weixin" data-cmd="weixin" title="生成文章二维码"></a>
+            <a href="#" class="fa fa-share-alt bds_more" data-cmd="more"></a>
+        </div>
+        <script>
+            window._bd_share_config={
+                "common":{"bdSnsKey":{},"bdText":"用Wireshark解密无线网络数据包　| F1v3's Notes　","bdMini":"2","bdMiniList":false,"bdPic":"","bdStyle":"0","bdSize":"24"},"share":{}};with(document)0[(getElementsByTagName('head')[0]||body).appendChild(createElement('script')).src='http://bdimg.share.baidu.com/static/api/js/share.js?v=89860593.js?cdnversion='+~(-new Date()/36e5)];
+        </script>
+    
+
+    
+</div>
+
+
+
+
+
+
+
+    
+
+
+
+
+    <div class="scroll" id="post-nav-button">
+        
+            <a href="/blog/1511748171281.html" title="上一篇: Centos搭建Weblogic容器">
+                <i class="fa fa-angle-left"></i>
+            </a>
+        
+
+        <a title="文章列表"><i class="fa fa-bars"></i><i class="fa fa-times"></i></a>
+
+        
+            <a href="/blog/1505542002394.html" title="下一篇: 推荐书籍">
+                <i class="fa fa-angle-right"></i>
+            </a>
+        
+    </div>
+
+    <ul class="post-list"><li class="post-list-item"><a class="post-list-link" href="/blog/1547519250524.html">SpringBoot无需配置文件上传</a></li><li class="post-list-item"><a class="post-list-link" href="/blog/1539757907171.html">idea打包jar报Error: Invalid or corrupt jarfile</a></li><li class="post-list-item"><a class="post-list-link" href="/blog/1533106712367.html">Struts2历史漏洞POC</a></li><li class="post-list-item"><a class="post-list-link" href="/blog/1521424233278.html">Java代码审计相关文章（长期更新）</a></li><li class="post-list-item"><a class="post-list-link" href="/blog/1520349399715.html">Linux虚拟机使用主机shadowsocks代理上网</a></li><li class="post-list-item"><a class="post-list-link" href="/blog/1514542114971.html">记一次JS木马分析</a></li><li class="post-list-item"><a class="post-list-link" href="/blog/1511748171281.html">Centos搭建Weblogic容器</a></li><li class="post-list-item"><a class="post-list-link" href="/blog/用Wireshark解密无线网络数据包.html">用Wireshark解密无线网络数据包</a></li><li class="post-list-item"><a class="post-list-link" href="/blog/1505542002394.html">推荐书籍</a></li><li class="post-list-item"><a class="post-list-link" href="/blog/1505536580617.html">ERROR Deployer not found: git hexo d 报错</a></li></ul>
+
+
+
+
+    <script>
+        
+    </script>
+</div>
+      <footer id="footer">
+    <div class="outer">
+        <div id="footer-info">
+            <div class="footer-left">
+                <i class="fa fa-copyright"></i> 
+                2017-2019 F1v3
+            </div>
+            <div class="footer-right">
+                <a href="http://hexo.io/" target="_blank" title="快速、简洁且高效的博客框架">Hexo</a>  Theme <a href="https://github.com/MOxFIVE/hexo-theme-yelee" target="_blank" title="简而不减 Hexo 双栏博客主题  v3.5">Yelee</a> by MOxFIVE <i class="fa fa-heart animated infinite pulse"></i>
+            </div>
+        </div>
+        
+            <div class="visit">
+                
+                    <span id="busuanzi_container_site_pv" style="display:none">
+                        <span id="site-visit" title="本站到访数"><i class="fa fa-user" aria-hidden="true"></i><span id="busuanzi_value_site_uv"></span>
+                        </span>
+                    </span>
+                
+                
+                    <span>| </span>
+                
+                
+                    <span id="busuanzi_container_page_pv" style="display:none">
+                        <span id="page-visit" title="本页阅读量"><i class="fa fa-eye animated infinite pulse" aria-hidden="true"></i><span id="busuanzi_value_page_pv"></span>
+                        </span>
+                    </span>
+                
+            </div>
+        
+    </div>
+</footer>
+    </div>
+    
+<script data-main="/js/main.js" src="//cdn.bootcss.com/require.js/2.2.0/require.min.js"></script>
+
+    <script>
+        $(document).ready(function() {
+            var iPad = window.navigator.userAgent.indexOf('iPad');
+            if (iPad > -1 || $(".left-col").css("display") === "none") {
+                var bgColorList = ["#9db3f4", "#414141", "#e5a859", "#f5dfc6", "#c084a0", "#847e72", "#cd8390", "#996731"];
+                var bgColor = Math.ceil(Math.random() * (bgColorList.length - 1));
+                $("body").css({"background-color": bgColorList[bgColor], "background-size": "cover"});
+            }
+            else {
+                var backgroundnum = 5;
+                var backgroundimg = "url(/background/bg-x.jpg)".replace(/x/gi, Math.ceil(Math.random() * backgroundnum));
+                $("body").css({"background": backgroundimg, "background-attachment": "fixed", "background-size": "cover"});
+            }
+        })
+    </script>
+
+
+
+
+
+<div class="scroll" id="scroll">
+    <a href="#" title="返回顶部"><i class="fa fa-arrow-up"></i></a>
+    <a href="#comments" onclick="load$hide();" title="查看评论"><i class="fa fa-comments-o"></i></a>
+    <a href="#footer" title="转到底部"><i class="fa fa-arrow-down"></i></a>
+</div>
+<script>
+    // Open in New Window
+    
+        var oOpenInNew = {
+            
+            
+            
+            
+            
+            
+             archives: ".archive-article-title", 
+             miniArchives: "a.post-list-link", 
+            
+             friends: "#js-friends a", 
+             socail: ".social a" 
+        }
+        for (var x in oOpenInNew) {
+            $(oOpenInNew[x]).attr("target", "_blank");
+        }
+    
+</script>
+
+<script async src="https://dn-lbstatics.qbox.me/busuanzi/2.3/busuanzi.pure.mini.js">
+</script>
+  </div>
+</body>
+</html>
