@@ -15,18 +15,20 @@
 
 
 
-<meta name="description" content="Centos搭建Weblogic容器">
-<meta name="keywords" content="Centos,Weblogic">
+<meta name="description" content="Kali2.0里面的hydra是8.6版本的，在测试爆破3389时，能够正常运行，但是爆不出测试机的正确密码。">
+<meta name="keywords" content="hydra">
 <meta property="og:type" content="article">
-<meta property="og:title" content="Centos搭建Weblogic容器">
-<meta property="og:url" content="http://x-f1v3.github.io/blog/1511748171281.html">
+<meta property="og:title" content="hydra问题">
+<meta property="og:url" content="http://x-f1v3.github.io/blog/1573541964775.html">
 <meta property="og:site_name" content="F1v3&#39;s Notes">
-<meta property="og:description" content="Centos搭建Weblogic容器">
+<meta property="og:description" content="Kali2.0里面的hydra是8.6版本的，在测试爆破3389时，能够正常运行，但是爆不出测试机的正确密码。">
 <meta property="og:locale" content="zh-Hans">
-<meta property="og:updated_time" content="2019-06-13T05:30:31.850Z">
+<meta property="og:image" content="http://x-f1v3.github.io/images/1573543195446.png">
+<meta property="og:updated_time" content="2019-11-12T07:24:59.904Z">
 <meta name="twitter:card" content="summary">
-<meta name="twitter:title" content="Centos搭建Weblogic容器">
-<meta name="twitter:description" content="Centos搭建Weblogic容器">
+<meta name="twitter:title" content="hydra问题">
+<meta name="twitter:description" content="Kali2.0里面的hydra是8.6版本的，在测试爆破3389时，能够正常运行，但是爆不出测试机的正确密码。">
+<meta name="twitter:image" content="http://x-f1v3.github.io/images/1573543195446.png">
 
 <link rel="apple-touch-icon" href="/apple-touch-icon.png">
 
@@ -58,7 +60,7 @@
 <link href="//cdn.bootcss.com/font-awesome/4.6.3/css/font-awesome.min.css" rel="stylesheet">
 
 
-<title>Centos搭建Weblogic容器 | F1v3&#39;s Notes</title>
+<title>hydra问题 | F1v3&#39;s Notes</title>
 
 <script src="//cdn.bootcss.com/jquery/2.2.4/jquery.min.js"></script>
 <script src="//cdn.bootcss.com/clipboard.js/1.5.10/clipboard.min.js"></script>
@@ -258,11 +260,11 @@
     </div>
     <link class="menu-list" tags="标签" friends="友情链接" about="关于我">
 </nav>
-      <div class="body-wrap"><article id="post-1511748171281" class="article article-type-post" itemscope itemprop="blogPost">
+      <div class="body-wrap"><article id="post-1573541964775" class="article article-type-post" itemscope itemprop="blogPost">
   
     <div class="article-meta">
-      <a href="/blog/1511748171281.html" class="article-date">
-      <time datetime="2017-11-27T02:02:51.000Z" itemprop="datePublished">2017-11-27</time>
+      <a href="/blog/1573541964775.html" class="article-date">
+      <time datetime="2019-11-12T06:59:24.000Z" itemprop="datePublished">2019-11-12</time>
 </a>
 
 
@@ -277,7 +279,7 @@
         
   
     <h1 class="article-title" itemprop="name">
-      Centos搭建Weblogic容器
+      hydra问题
     </h1>
   
 
@@ -286,13 +288,13 @@
       <div class="article-info article-info-post">
         
     <div class="article-category tagcloud">
-    <a class="article-category-link" href="/categories/系统环境/">系统环境</a>
+    <a class="article-category-link" href="/categories/工具/">工具</a>
     </div>
 
 
         
     <div class="article-tag tagcloud">
-        <ul class="article-tag-list"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/Centos/">Centos</a></li><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/Weblogic/">Weblogic</a></li></ul>
+        <ul class="article-tag-list"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/hydra/">hydra</a></li></ul>
     </div>
 
         <div class="clearfix"></div>
@@ -306,28 +308,15 @@
           
 
 
-        <p>Centos搭建Weblogic容器<br><a id="more"></a></p>
-<h3 id="安装JDK"><a href="#安装JDK" class="headerlink" title="安装JDK"></a>安装JDK</h3><p>安装前需要先卸载Centos自带的OpenJDK，然后安装新的JDK。</p>
-<p>下载地址<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">http://www.oracle.com/technetwork/java/javase/downloads/jdk8-downloads-2133151.html</span><br></pre></td></tr></table></figure></p>
-<p>卸载OpenJDK<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line">rpm -qa | grep java</span><br><span class="line"></span><br><span class="line">然后把带有OpenJDK的删除，如</span><br><span class="line">yum -y remove java-1.7.0-openjdk ...</span><br></pre></td></tr></table></figure></p>
-<p>安装下载的JDK<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">rpm -ivh /tmp/jdk-8u45-linux-x64.rpm</span><br></pre></td></tr></table></figure></p>
-<p>JDK安装路径为<code>/usr/java</code></p>
-<p>设置环境变量<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line">vim /etc/profile</span><br><span class="line">加入：</span><br><span class="line">JAVA_HOME=/usr/java/jdk1.8.0_45</span><br><span class="line">JRE_HOME=/usr/java/jdk1.8.0_45/jre</span><br><span class="line">PATH=$PATH:$JAVA_HOME/bin:$JRE_HOME/bin</span><br><span class="line">export JAVA_HOME JRE_HOME PATH CLASSPATH</span><br></pre></td></tr></table></figure></p>
-<p>使设置生效<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">source /etc/profile</span><br></pre></td></tr></table></figure></p>
-<p>参考</p>
-<blockquote>
-<p><a href="http://www.live-in.org/archives/2486.html" target="_blank" rel="noopener">http://www.live-in.org/archives/2486.html</a><br><a href="http://blog.csdn.net/duguduchong/article/details/8816371" target="_blank" rel="noopener">http://blog.csdn.net/duguduchong/article/details/8816371</a></p>
-</blockquote>
-<h3 id="安装Weblogic容器"><a href="#安装Weblogic容器" class="headerlink" title="安装Weblogic容器"></a>安装Weblogic容器</h3><p>下载地址<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">http://www.oracle.com/technetwork/cn/middleware/ias/downloads/wls-main-091116-zhs.html</span><br></pre></td></tr></table></figure></p>
-<p>具体的安装过程，也是网上有的，亲测可用。</p>
-<p>参考</p>
-<blockquote>
-<p><a href="http://www.live-in.org/archives/2491.html" target="_blank" rel="noopener">http://www.live-in.org/archives/2491.html</a></p>
-</blockquote>
-<p>具体的命令行安装还可以参考</p>
-<blockquote>
-<p><a href="http://linux.it.net.cn/CentOS/course/2017/0827/27158.html" target="_blank" rel="noopener">http://linux.it.net.cn/CentOS/course/2017/0827/27158.html</a></p>
-</blockquote>
+        <p>Kali2.0里面的hydra是8.6版本的，在测试爆破3389时，能够正常运行，但是爆不出测试机的正确密码。<br><a id="more"></a></p>
+<h2 id="问题"><a href="#问题" class="headerlink" title="问题"></a>问题</h2><p>在Kali2.0上用hydra测试爆破3389时，爆破不出测试机的正确密码。一直在跳：<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line">[STATUS] 1.00 tries/min, 5 tries in 00:00h, 0 to do in 03:00h, 1 active</span><br><span class="line">[STATUS] 0.83 tries/min, 5 tries in 00:00h, 0 to do in 03:00h, 1 active</span><br><span class="line">[STATUS] 0.56 tries/min, 5 tries in 00:00h, 0 to do in 03:00h, 1 active</span><br><span class="line">[STATUS] 0.36 tries/min, 5 tries in 00:00h, 0 to do in 03:00h, 1 active</span><br><span class="line">[STATUS] 0.33 tries/min, 5 tries in 00:00h, 0 to do in 03:00h, 1 active</span><br></pre></td></tr></table></figure></p>
+<p>不知道啥意思，反正是爆破不出来，肯定有问题。</p>
+<h2 id="尝试"><a href="#尝试" class="headerlink" title="尝试"></a>尝试</h2><p>想着是不是版本太低了，升级了一下，把hydra升级到当时的最新版本：<code>apt install hydra</code><br>跑了之后结果是<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">[ERROR] Compiled without FREERDP2 support, module not available!</span><br></pre></td></tr></table></figure></p>
+<p>emmm,貌似少了一个模块，本来想安装这个模块的，但是看了下，安装太慢，而且太麻烦了。<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">https://github.com/FreeRDP/FreeRDP</span><br></pre></td></tr></table></figure></p>
+<p>别人的安装记录<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">https://www.jianshu.com/p/86638f0e89d7</span><br></pre></td></tr></table></figure></p>
+<h2 id="解决"><a href="#解决" class="headerlink" title="解决"></a>解决</h2><p>还是到处搜啊，在Google上搜索到了其他人提交的<code>issue</code>：<a href="https://github.com/vanhauser-thc/thc-hydra/issues/420" target="_blank" rel="noopener">I have error with [ERROR] Compiled without FREERDP2 support, module not available! </a></p>
+<p>编译安装最新版hydra，如下：<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><span class="line">git clone https://github.com/vanhauser-thc/thc-hydra.git</span><br><span class="line">cd thc-hydra</span><br><span class="line">sudo apt install freerdp2-dev</span><br><span class="line">make clean</span><br><span class="line">./configure</span><br><span class="line">make</span><br><span class="line">make install</span><br></pre></td></tr></table></figure></p>
+<p>在kali2.0上测试成功。<br><img src="http://x-f1v3.github.io/images/1573543195446.png" alt="image"></p>
 
 
 
@@ -342,13 +331,13 @@
   
     
     <div class="copyright">
-        <p><span>本文标题:</span><a href="/blog/1511748171281.html">Centos搭建Weblogic容器</a></p>
+        <p><span>本文标题:</span><a href="/blog/1573541964775.html">hydra问题</a></p>
         <p><span>文章作者:</span><a href="/" title="回到主页">F1v3</a></p>
-        <p><span>发布时间:</span>2017-11-27, 10:02:51</p>
-        <p><span>最后更新:</span>2019-06-13, 13:30:31</p>
+        <p><span>发布时间:</span>2019-11-12, 14:59:24</p>
+        <p><span>最后更新:</span>2019-11-12, 15:24:59</p>
         <p>
-            <span>原始链接:</span><a class="post-url" href="/blog/1511748171281.html" title="Centos搭建Weblogic容器">http://x-f1v3.github.io/blog/1511748171281.html</a>
-            <span class="copy-path" data-clipboard-text="原文: http://x-f1v3.github.io/blog/1511748171281.html　　作者: F1v3" title="点击复制文章链接"><i class="fa fa-clipboard"></i></span>
+            <span>原始链接:</span><a class="post-url" href="/blog/1573541964775.html" title="hydra问题">http://x-f1v3.github.io/blog/1573541964775.html</a>
+            <span class="copy-path" data-clipboard-text="原文: http://x-f1v3.github.io/blog/1573541964775.html　　作者: F1v3" title="点击复制文章链接"><i class="fa fa-clipboard"></i></span>
             <script> var clipboard = new Clipboard('.copy-path'); </script>
         </p>
         <p>
@@ -360,16 +349,10 @@
 
     <nav id="article-nav">
         
-            <div id="article-nav-newer" class="article-nav-title">
-                <a href="/blog/1514542114971.html">
-                    记一次JS木马分析
-                </a>
-            </div>
-        
         
             <div id="article-nav-older" class="article-nav-title">
-                <a href="/blog/用Wireshark解密无线网络数据包.html">
-                    用Wireshark解密无线网络数据包
+                <a href="/blog/1561960885122.html">
+                    XXE漏洞
                 </a>
             </div>
         
@@ -381,7 +364,7 @@
     <div id="toc" class="toc-article">
         <strong class="toc-title">文章目录</strong>
         
-            <ol class="toc"><li class="toc-item toc-level-3"><a class="toc-link" href="#安装JDK"><span class="toc-number">1.</span> <span class="toc-text">安装JDK</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#安装Weblogic容器"><span class="toc-number">2.</span> <span class="toc-text">安装Weblogic容器</span></a></li></ol>
+            <ol class="toc"><li class="toc-item toc-level-2"><a class="toc-link" href="#问题"><span class="toc-number">1.</span> <span class="toc-text">问题</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#尝试"><span class="toc-number">2.</span> <span class="toc-text">尝试</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#解决"><span class="toc-number">3.</span> <span class="toc-text">解决</span></a></li></ol>
         
     </div>
     <style>
@@ -417,7 +400,7 @@
         </div>
         <script>
             window._bd_share_config={
-                "common":{"bdSnsKey":{},"bdText":"Centos搭建Weblogic容器　| F1v3's Notes　","bdMini":"2","bdMiniList":false,"bdPic":"","bdStyle":"0","bdSize":"24"},"share":{}};with(document)0[(getElementsByTagName('head')[0]||body).appendChild(createElement('script')).src='http://bdimg.share.baidu.com/static/api/js/share.js?v=89860593.js?cdnversion='+~(-new Date()/36e5)];
+                "common":{"bdSnsKey":{},"bdText":"hydra问题　| F1v3's Notes　","bdMini":"2","bdMiniList":false,"bdPic":"","bdStyle":"0","bdSize":"24"},"share":{}};with(document)0[(getElementsByTagName('head')[0]||body).appendChild(createElement('script')).src='http://bdimg.share.baidu.com/static/api/js/share.js?v=89860593.js?cdnversion='+~(-new Date()/36e5)];
         </script>
     
 
@@ -437,15 +420,13 @@
 
     <div class="scroll" id="post-nav-button">
         
-            <a href="/blog/1514542114971.html" title="上一篇: 记一次JS木马分析">
-                <i class="fa fa-angle-left"></i>
-            </a>
+            <a href="/" title="回到主页"><i class="fa fa-home"></i></a>
         
 
         <a title="文章列表"><i class="fa fa-bars"></i><i class="fa fa-times"></i></a>
 
         
-            <a href="/blog/用Wireshark解密无线网络数据包.html" title="下一篇: 用Wireshark解密无线网络数据包">
+            <a href="/blog/1561960885122.html" title="下一篇: XXE漏洞">
                 <i class="fa fa-angle-right"></i>
             </a>
         

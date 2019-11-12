@@ -6,7 +6,7 @@
   <link href="/atom.xml" rel="self"/>
   
   <link href="http://x-f1v3.github.io/"/>
-  <updated>2019-07-02T09:05:01.605Z</updated>
+  <updated>2019-11-12T07:24:59.904Z</updated>
   <id>http://x-f1v3.github.io/</id>
   
   <author>
@@ -15,6 +15,28 @@
   </author>
   
   <generator uri="http://hexo.io/">Hexo</generator>
+  
+  <entry>
+    <title>hydra问题</title>
+    <link href="http://x-f1v3.github.io//blog/1573541964775.html"/>
+    <id>http://x-f1v3.github.io//blog/1573541964775.html</id>
+    <published>2019-11-12T06:59:24.000Z</published>
+    <updated>2019-11-12T07:24:59.904Z</updated>
+    
+    <content type="html"><![CDATA[<p>Kali2.0里面的hydra是8.6版本的，在测试爆破3389时，能够正常运行，但是爆不出测试机的正确密码。<br><a id="more"></a></p><h2 id="问题"><a href="#问题" class="headerlink" title="问题"></a>问题</h2><p>在Kali2.0上用hydra测试爆破3389时，爆破不出测试机的正确密码。一直在跳：<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line">[STATUS] 1.00 tries/min, 5 tries in 00:00h, 0 to do in 03:00h, 1 active</span><br><span class="line">[STATUS] 0.83 tries/min, 5 tries in 00:00h, 0 to do in 03:00h, 1 active</span><br><span class="line">[STATUS] 0.56 tries/min, 5 tries in 00:00h, 0 to do in 03:00h, 1 active</span><br><span class="line">[STATUS] 0.36 tries/min, 5 tries in 00:00h, 0 to do in 03:00h, 1 active</span><br><span class="line">[STATUS] 0.33 tries/min, 5 tries in 00:00h, 0 to do in 03:00h, 1 active</span><br></pre></td></tr></table></figure></p><p>不知道啥意思，反正是爆破不出来，肯定有问题。</p><h2 id="尝试"><a href="#尝试" class="headerlink" title="尝试"></a>尝试</h2><p>想着是不是版本太低了，升级了一下，把hydra升级到当时的最新版本：<code>apt install hydra</code><br>跑了之后结果是<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">[ERROR] Compiled without FREERDP2 support, module not available!</span><br></pre></td></tr></table></figure></p><p>emmm,貌似少了一个模块，本来想安装这个模块的，但是看了下，安装太慢，而且太麻烦了。<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">https://github.com/FreeRDP/FreeRDP</span><br></pre></td></tr></table></figure></p><p>别人的安装记录<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">https://www.jianshu.com/p/86638f0e89d7</span><br></pre></td></tr></table></figure></p><h2 id="解决"><a href="#解决" class="headerlink" title="解决"></a>解决</h2><p>还是到处搜啊，在Google上搜索到了其他人提交的<code>issue</code>：<a href="https://github.com/vanhauser-thc/thc-hydra/issues/420" target="_blank" rel="noopener">I have error with [ERROR] Compiled without FREERDP2 support, module not available! </a></p><p>编译安装最新版hydra，如下：<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><span class="line">git clone https://github.com/vanhauser-thc/thc-hydra.git</span><br><span class="line">cd thc-hydra</span><br><span class="line">sudo apt install freerdp2-dev</span><br><span class="line">make clean</span><br><span class="line">./configure</span><br><span class="line">make</span><br><span class="line">make install</span><br></pre></td></tr></table></figure></p><p>在kali2.0上测试成功。<br><img src="http://x-f1v3.github.io/images/1573543195446.png" alt="image"></p>]]></content>
+    
+    <summary type="html">
+    
+      &lt;p&gt;Kali2.0里面的hydra是8.6版本的，在测试爆破3389时，能够正常运行，但是爆不出测试机的正确密码。&lt;br&gt;
+    
+    </summary>
+    
+      <category term="工具" scheme="http://x-f1v3.github.io/categories/%E5%B7%A5%E5%85%B7/"/>
+    
+    
+      <category term="hydra" scheme="http://x-f1v3.github.io/tags/hydra/"/>
+    
+  </entry>
   
   <entry>
     <title>XXE漏洞</title>
