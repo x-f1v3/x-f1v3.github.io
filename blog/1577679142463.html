@@ -20,7 +20,7 @@
 
     <!--Open Graph Title-->
     
-        <meta property="og:title" content="F1v3&#39;s Notes">
+        <meta property="og:title" content="CVE-2019-17571/Apache Log4j 反序列化远程代码执行漏洞">
     
 
     <!--Open Graph Description-->
@@ -33,7 +33,7 @@
 
     <!--Type page-->
     
-        <meta property="og:type" content="website">
+        <meta property="og:type" content="article">
     
 
     <!--Page Cover-->
@@ -44,7 +44,7 @@
 
     <!-- Title -->
     
-    <title>日常 - F1v3&#39;s Notes</title>
+    <title>CVE-2019-17571/Apache Log4j 反序列化远程代码执行漏洞 - F1v3&#39;s Notes</title>
 
     <!-- Bootstrap Core CSS -->
     <link rel="stylesheet" href="//maxcdn.bootstrapcdn.com/bootstrap/4.0.0-alpha.2/css/bootstrap.min.css" integrity="sha384-y3tfxAZXuh4HwSYylfB+J125MxIs6mR5FOHamPBG064zB+AFeWH94NdvaCBm8qnd" crossorigin="anonymous">
@@ -119,9 +119,7 @@
 <div class="container">
 
     <!-- Main Content -->
-    
-
-<div class="row">
+    <div class="row">
     <div class="col-sm-12">
 
         <!--Title and Logo-->
@@ -129,25 +127,69 @@
     <div class="logo">
         <a href="/"><i class="logo-icon fa fa-cube" aria-hidden="true"></i></a>
         
-            <h1 id="main-title" class="title">#日常</h1>
-        
     </div>
 </header>
 
-        <section class="main archive-container">
+        <section class="main">
             
-                <div class="archive-post">
-    <a href="/blog/1520349399715.html">
-        <span class="archive-date">
-            Mar 2018
-        </span>
-        Linux虚拟机使用主机shadowsocks代理上网
-    </a>
+<div class="post">
+
+    <div class="post-header">
+        <h1 class="title">
+            <a href="/blog/1577679142463.html">
+                CVE-2019-17571/Apache Log4j 反序列化远程代码执行漏洞
+            </a>
+        </h1>
+        <div class="post-info">
+            
+                <span class="date">2019-12-30</span>
+            
+            
+            
+                <span class="category">
+                    <a href="/categories/漏洞分析/">漏洞分析</a>
+                </span>
+            
+        </div>
+    </div>
+
+    <div class="content">
+
+        <!-- Gallery -->
+        
+
+        <!-- Post Content -->
+        <h1 id="CVE-2019-17571"><a href="#CVE-2019-17571" class="headerlink" title="CVE-2019-17571"></a>CVE-2019-17571</h1><p>CVE-2019-17571/Apache Log4j 反序列化远程代码执行漏洞</p>
+<p>用的是 <code>Apache Log4j 1.2.17</code> 版本，<code>sink</code> 在 <code>org.apache.log4j.net.SocketNode</code> 类中：</p>
+<p><img src="http://x-f1v3.github.io/images/1577679232280.png" alt="image"></p>
+<p>在构造函数中，传入 socket 传输的数据流，然后在 <code>run</code> 方法中直接调用 <code>readObject()</code> 反序列化。</p>
+<p>查找在哪些类中会调用 <code>SocketNode</code> 类，发现 <code>SocketServer</code>、<code>SimpleSocketServer</code> 类中都有调用：<br><img src="http://x-f1v3.github.io/images/1577679244091.png" alt="image"></p>
+<p><img src="http://x-f1v3.github.io/images/1577679259398.png" alt="image"></p>
+<p>并且由于 <code>SocketNode</code> 是实现 <code>Runnable</code> 接口。所以通过 <code>new Thread().start()</code> 方法能执行其 <code>run</code> 方法造成反序列化代码执行漏洞。</p>
+<p>复现漏洞可以通过调用 <code>SocketServer</code>、<code>SimpleSocketServer</code> 类，或者自己实现都可以。</p>
+<p>当然，任意代码执行的话还需要调用其他可以的 <code>gadget</code> .比如 <code>Jdk7u21</code>、<code>CommonsCollections1</code> 之类的。</p>
+<p><img src="http://x-f1v3.github.io/images/1577679266375.png" alt="image"></p>
+
+    </div>
+
+    
+
+    
+        <div class="post-tags">
+            <i class="fa fa-tags" aria-hidden="true"></i>
+            <a href="/tags/反序列化/">#反序列化</a>
+        </div>
+    
+
+    <!-- Comments -->
+    
+
 </div>
-            
         </section>
+
     </div>
 </div>
+
 
 </div>
 
