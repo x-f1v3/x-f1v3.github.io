@@ -20,7 +20,7 @@
 
     <!--Open Graph Title-->
     
-        <meta property="og:title" content="CVE-2019-17571/Apache Log4j 反序列化远程代码执行漏洞">
+        <meta property="og:title" content="CVE-2019-17571">
     
 
     <!--Open Graph Description-->
@@ -44,7 +44,7 @@
 
     <!-- Title -->
     
-    <title>CVE-2019-17571/Apache Log4j 反序列化远程代码执行漏洞 - F1v3&#39;s Notes</title>
+    <title>CVE-2019-17571 - F1v3&#39;s Notes</title>
 
     <!-- Bootstrap Core CSS -->
     <link rel="stylesheet" href="//maxcdn.bootstrapcdn.com/bootstrap/4.0.0-alpha.2/css/bootstrap.min.css" integrity="sha384-y3tfxAZXuh4HwSYylfB+J125MxIs6mR5FOHamPBG064zB+AFeWH94NdvaCBm8qnd" crossorigin="anonymous">
@@ -137,7 +137,7 @@
     <div class="post-header">
         <h1 class="title">
             <a href="/blog/1577679142463.html">
-                CVE-2019-17571/Apache Log4j 反序列化远程代码执行漏洞
+                CVE-2019-17571
             </a>
         </h1>
         <div class="post-info">
@@ -159,7 +159,7 @@
         
 
         <!-- Post Content -->
-        <h1 id="CVE-2019-17571"><a href="#CVE-2019-17571" class="headerlink" title="CVE-2019-17571"></a>CVE-2019-17571</h1><p>CVE-2019-17571/Apache Log4j 反序列化远程代码执行漏洞</p>
+        <p>CVE-2019-17571/Apache Log4j 反序列化远程代码执行漏洞<br><a id="more"></a></p>
 <p>用的是 <code>Apache Log4j 1.2.17</code> 版本，<code>sink</code> 在 <code>org.apache.log4j.net.SocketNode</code> 类中：</p>
 <p><img src="http://x-f1v3.github.io/images/1577679232280.png" alt="image"></p>
 <p>在构造函数中，传入 socket 传输的数据流，然后在 <code>run</code> 方法中直接调用 <code>readObject()</code> 反序列化。</p>
@@ -211,7 +211,7 @@
         <ul>
             
             <li>
-                <a class="footer-post" href="/blog/1577679142463.html">CVE-2019-17571/Apache Log</a>
+                <a class="footer-post" href="/blog/1577679142463.html">CVE-2019-17571</a>
             </li>
             
             <li>
@@ -237,19 +237,19 @@
     <ul>
         
         <li>
-            <a class="footer-post" href="/categories/学习/">学习</a>
-        </li>
-        
-        <li>
             <a class="footer-post" href="/categories/系统环境/">系统环境</a>
         </li>
         
         <li>
-            <a class="footer-post" href="/categories/日常姿势/">日常姿势</a>
+            <a class="footer-post" href="/categories/Java代码审计/">Java代码审计</a>
         </li>
         
         <li>
-            <a class="footer-post" href="/categories/Java代码审计/">Java代码审计</a>
+            <a class="footer-post" href="/categories/编程记录/">编程记录</a>
+        </li>
+        
+        <li>
+            <a class="footer-post" href="/categories/工具/">工具</a>
         </li>
         
     </ul>

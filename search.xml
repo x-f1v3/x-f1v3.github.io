@@ -3,9 +3,9 @@
   
     
     <entry>
-      <title><![CDATA[CVE-2019-17571/Apache Log4j 反序列化远程代码执行漏洞]]></title>
+      <title><![CDATA[CVE-2019-17571]]></title>
       <url>//blog/1577679142463.html</url>
-      <content type="html"><![CDATA[<h1 id="CVE-2019-17571"><a href="#CVE-2019-17571" class="headerlink" title="CVE-2019-17571"></a>CVE-2019-17571</h1><p>CVE-2019-17571/Apache Log4j 反序列化远程代码执行漏洞</p>
+      <content type="html"><![CDATA[<p>CVE-2019-17571/Apache Log4j 反序列化远程代码执行漏洞<br><a id="more"></a></p>
 <p>用的是 <code>Apache Log4j 1.2.17</code> 版本，<code>sink</code> 在 <code>org.apache.log4j.net.SocketNode</code> 类中：</p>
 <p><img src="http://x-f1v3.github.io/images/1577679232280.png" alt="image"></p>
 <p>在构造函数中，传入 socket 传输的数据流，然后在 <code>run</code> 方法中直接调用 <code>readObject()</code> 反序列化。</p>
