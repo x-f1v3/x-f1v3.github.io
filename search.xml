@@ -1,6 +1,20 @@
 <?xml version="1.0" encoding="utf-8"?>
 <search>
   <entry>
+    <title><![CDATA[Weblogic CVE-2020-14645 分析]]></title>
+    <url>%2F%2Fblog%2F1605087292960.html</url>
+    <content type="text"><![CDATA[Weblogic CVE-2020-14645 漏洞分析 调用链123456789101112getDatabaseMetaData:4004, JdbcRowSetImpl (com.sun.rowset)invoke0:-1, NativeMethodAccessorImpl (sun.reflect)invoke:62, NativeMethodAccessorImpl (sun.reflect)invoke:43, DelegatingMethodAccessorImpl (sun.reflect)invoke:498, Method (java.lang.reflect)extractComplex:432, UniversalExtractor (com.tangosol.util.extractor)extract:175, UniversalExtractor (com.tangosol.util.extractor)compare:71, ExtractorComparator (com.tangosol.util.comparator)siftDownUsingComparator:722, PriorityQueue (java.util)siftDown:688, PriorityQueue (java.util)heapify:737, PriorityQueue (java.util)readObject:797, PriorityQueue (java.util) 可以看到前面部分是 CC 链，作用就是使用的 gadget 可以从 PriorityQueue.readObject() 直接到 Comparator.compare()，这样 gadget 相对来说比较好找。 直接看到 UniversalExtractor.extract： 在 if 中有个 targetPrev.getMethod().invoke，但前提条件是 oTarget.getClass() == targetPrev.getTargetClass(), oTarget 是能被控制的，但是肯定不能是特定的类型，所以只能进入 else ，进入 extractComplex 方法： 先来看到其中 this.getCanonicalName() 方法： 接着进入 CanonicalNames.computeValueExtractorCanonicalName： 很明显，该方法就是限制反射调用的方法必须以 get、is 开头，最后返回去除2个开头后的方法名，继续回到 extractComplex 方法： 接下来执行到 ClassHelper.findMethod(clzTarget, BEAN_ACCESSOR_PREFIXES[cchPrefix] + sBeanAttribute, clzParam, false);, 看命名就知道了，是寻找类中的方法，其中 clzTarget 是传入的类，clzParam 是参数，BEAN_ACCESSOR_PREFIXES 就是 get、is，然后对之前分割的方法再次拼接： 最后调用到 method.invoke(oTarget, aoParam): 从上述过程中可以看出，限制条件就是反射调用的方法必须是以 get，is 开头，至于方法参数貌似可以在构造犯法中传入的，所以并不是限制： 过程比较简单清晰，而且只影响 12.2.1.4.0 版本，影响较小。 最新版的补丁是把 com.tangosol.util.extractor.AbstractExtractor 这个父类加入黑名单了，所以继承这个类的都不能反序列化了。]]></content>
+      <categories>
+        <category>漏洞分析</category>
+      </categories>
+      <tags>
+        <tag>Weblogic</tag>
+        <tag>Java</tag>
+        <tag>漏洞</tag>
+        <tag>反序列化</tag>
+      </tags>
+  </entry>
+  <entry>
     <title><![CDATA[Weblogic CVE-2020-14825 分析]]></title>
     <url>%2F%2Fblog%2F1604564457789.html</url>
     <content type="text"><![CDATA[Weblogic CVE-2020-14825 漏洞分析调用链1234567891011121314connect:624, JdbcRowSetImpl (com.sun.rowset)getDatabaseMetaData:4004, JdbcRowSetImpl (com.sun.rowset)invoke0:-1, NativeMethodAccessorImpl (sun.reflect)invoke:62, NativeMethodAccessorImpl (sun.reflect)invoke:43, DelegatingMethodAccessorImpl (sun.reflect)invoke:498, Method (java.lang.reflect)getAttributeValueFromObject:82, MethodAttributeAccessor (org.eclipse.persistence.internal.descriptors)getAttributeValueFromObject:61, MethodAttributeAccessor (org.eclipse.persistence.internal.descriptors)extract:51, LockVersionExtractor (oracle.eclipselink.coherence.integrated.internal.cache)compare:70, ExtractorComparator (com.tangosol.util.comparator)siftDownUsingComparator:722, PriorityQueue (java.util)siftDown:688, PriorityQueue (java.util)heapify:737, PriorityQueue (java.util)readObject:797, PriorityQueue (java.util) 可以看到前面部分还是熟悉的 CC 链，原理一致，不在多说： 看到 com.tangosol.util.comparator.compare: 因为传入的实例不属于 Entry 类，所以会执行后面的 this.m_extractor.extract(o2)，从利用链可以看出这里的 this.m_extractor 是 oracle.eclipselink.coherence.integrated.internal.cache.LockVersionExtractor，继续跟进他的 extract 方法： 直接进入 this.accessor.getAttributeValueFromObject 方法，其中 this.accessor 是可以直接从构造方法传入的，也就是能被控制的，从利用链看出这里传入的是 org.eclipse.persistence.internal.descriptors.MethodAttributeAccessor，先判断 this.accessor.isInitialized(): 要满足条件，只需要 this.getMethod 和 this.isWriteOnly() 不为空即可,其中 this.isWriteOnly() 可以通过父类的 setIsWriteOnly 赋值： this.getMethod 后面细说。跟进其 getAttributeValueFromObject 方法： 可以看到这里调用了反射，但是 this.getMethod 没有明确，看下 this.getMethod 是如何赋值的： 有个 transient 关键字，所以这个属性不会被序列化，但该类中又恰好有 setGetMethod 方法，可以通过该方法对 getMethod 属性进行赋值，也是我们能够控制的，通过也满足了前面的 this.accessor.isInitialized() 的条件。 至此，所以整个利用链都能走通了。 如何继续挖呢？补丁的黑名单只限制了 oracle.eclipselink.coherence.integrated.internal.cache.LockVersionExtractor 这个类，可以看看有无类似的类]]></content>
