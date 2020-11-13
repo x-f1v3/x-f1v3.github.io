@@ -1,6 +1,20 @@
 <?xml version="1.0" encoding="utf-8"?>
 <search>
   <entry>
+    <title><![CDATA[Weblogic CVE-2020-14644 分析]]></title>
+    <url>%2F%2Fblog%2F1605265172149.html</url>
+    <content type="text"><![CDATA[Weblogic CVE-2020-14644 分析 该漏洞与之前利用 Comparator.compare() 链的思路不同，主要是利用 defineClass 加载自定义类实现的远程代码执行。 利用类是 com.tangosol.internal.util.invoke.RemoteConstructor，先来看我们能够控制的部分，也就是构造方法： 传入了 ClassDefinition，继续跟进： 传入一个 ClassIdentity 类型的 id 和对象的字节数组，在继续跟进 ClassIdentity，可以看到，在其构造方法中需传入一个 class 获得赋值sPackage,sBaseName,sVersion: 在来看反序列化的部分，该类是通过 readResolve 进行反序列化的，readResolve 可以覆盖 readobject 的内容。 进入 this.newInstance() 方法： 最终进入 com.tangosol.internal.util.invoke.RemotableSupport 的 realize 方法： 由于之前未加载过该自定义类，所以会进入 this.defineClass(definition) 方法，跟进： 大概看了下就知道和之前的构造方法中的参数基本相同，也就是都是我们可以控制的，进入 definition.getId().getName(): 最终执行的是 getSimpleName() 方法，返回的是 BaseName+$+Version 的值，返回 defineClass 方法： 接下来就是把处理的类名、类对象的字节数组及长度传入 this.defineClass，由于 com.tangosol.internal.util.invoke.RemotableSupport 是继承 ClassLoader 的，所以这里的 this.defineClass 实际上是 ClassLoader.defineClass 也就是创建类，最后创建类的实例，达到实现自定义类的目的： 过程中需要注意的一点就是自定义的类名是由2部分组成的。 利用方式有2种，第一种就是利用重写原有的类，如这里是 LambdaIdentity：12345678910111213141516package com.tangosol.internal.util.invoke.lambda;import java.io.IOException;public class LambdaIdentity$423B02C050017B24DB10DFF759AA56BF&#123; public LambdaIdentity$423B02C050017B24DB10DFF759AA56BF() &#123; &#125; static &#123; try &#123; Runtime.getRuntime().exec(&quot;open /Applications/Calculator.app&quot;); &#125; catch (IOException var1) &#123; var1.printStackTrace(); &#125; &#125;&#125; 这样的好处是后面的 hash 相对固定，第二种是先计算 hash，然后通过 javaassist 动态修改自定义类的名字。 整个逻辑还是相对清晰，过程也并不复杂，也提供了一种新的挖掘思路，注意构造方法中能直接传入字节数组的类]]></content>
+      <categories>
+        <category>漏洞分析</category>
+      </categories>
+      <tags>
+        <tag>Weblogic</tag>
+        <tag>Java</tag>
+        <tag>漏洞</tag>
+        <tag>反序列化</tag>
+      </tags>
+  </entry>
+  <entry>
     <title><![CDATA[Weblogic CVE-2020-14645 分析]]></title>
     <url>%2F%2Fblog%2F1605087292960.html</url>
     <content type="text"><![CDATA[Weblogic CVE-2020-14645 漏洞分析 调用链123456789101112getDatabaseMetaData:4004, JdbcRowSetImpl (com.sun.rowset)invoke0:-1, NativeMethodAccessorImpl (sun.reflect)invoke:62, NativeMethodAccessorImpl (sun.reflect)invoke:43, DelegatingMethodAccessorImpl (sun.reflect)invoke:498, Method (java.lang.reflect)extractComplex:432, UniversalExtractor (com.tangosol.util.extractor)extract:175, UniversalExtractor (com.tangosol.util.extractor)compare:71, ExtractorComparator (com.tangosol.util.comparator)siftDownUsingComparator:722, PriorityQueue (java.util)siftDown:688, PriorityQueue (java.util)heapify:737, PriorityQueue (java.util)readObject:797, PriorityQueue (java.util) 可以看到前面部分是 CC 链，作用就是使用的 gadget 可以从 PriorityQueue.readObject() 直接到 Comparator.compare()，这样 gadget 相对来说比较好找。 直接看到 UniversalExtractor.extract： 在 if 中有个 targetPrev.getMethod().invoke，但前提条件是 oTarget.getClass() == targetPrev.getTargetClass(), oTarget 是能被控制的，但是肯定不能是特定的类型，所以只能进入 else ，进入 extractComplex 方法： 先来看到其中 this.getCanonicalName() 方法： 接着进入 CanonicalNames.computeValueExtractorCanonicalName： 很明显，该方法就是限制反射调用的方法必须以 get、is 开头，最后返回去除2个开头后的方法名，继续回到 extractComplex 方法： 接下来执行到 ClassHelper.findMethod(clzTarget, BEAN_ACCESSOR_PREFIXES[cchPrefix] + sBeanAttribute, clzParam, false);, 看命名就知道了，是寻找类中的方法，其中 clzTarget 是传入的类，clzParam 是参数，BEAN_ACCESSOR_PREFIXES 就是 get、is，然后对之前分割的方法再次拼接： 最后调用到 method.invoke(oTarget, aoParam): 从上述过程中可以看出，限制条件就是反射调用的方法必须是以 get，is 开头，至于方法参数貌似可以在构造犯法中传入的，所以并不是限制： 过程比较简单清晰，而且只影响 12.2.1.4.0 版本，影响较小。 最新版的补丁是把 com.tangosol.util.extractor.AbstractExtractor 这个父类加入黑名单了，所以继承这个类的都不能反序列化了。]]></content>
