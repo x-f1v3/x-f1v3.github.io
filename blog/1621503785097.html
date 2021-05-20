@@ -22,30 +22,27 @@
     var CONFIG = {"hostname":"x-f1v3.github.io","root":"/","scheme":"Mist","version":"7.8.0","exturl":false,"sidebar":{"position":"left","display":"hide","padding":18,"offset":12,"onmobile":false},"copycode":{"enable":true,"show_result":true,"style":"flat"},"back2top":{"enable":true,"sidebar":false,"scrollpercent":true},"bookmark":{"enable":false,"color":"#222","save":"auto"},"fancybox":false,"mediumzoom":false,"lazyload":false,"pangu":false,"comments":{"style":"tabs","active":null,"storage":true,"lazyload":false,"nav":null},"algolia":{"hits":{"per_page":10},"labels":{"input_placeholder":"Search for Posts","hits_empty":"We didn't find any results for the search: ${query}","hits_stats":"${hits} results found in ${time} ms"}},"localsearch":{"enable":true,"trigger":"auto","top_n_per_article":1,"unescape":false,"preload":false},"motion":{"enable":true,"async":false,"transition":{"post_block":"fadeIn","post_header":"slideDownIn","post_body":"slideDownIn","coll_header":"slideLeftIn","sidebar":"slideUpIn"}},"path":"search.xml"};
   </script>
 
-  <meta name="description" content="当知道WIFI密码时，不需要直接连接WIFI，就可以抓取数据包">
-<meta name="keywords" content="Wireshark">
+  <meta name="description" content="在审计中，发现了如下代码">
+<meta name="keywords" content="Java,姿势">
 <meta property="og:type" content="article">
-<meta property="og:title" content="用Wireshark解密无线网络数据包">
-<meta property="og:url" content="http://x-f1v3.github.io/blog/用Wireshark解密无线网络数据包.html">
+<meta property="og:title" content="探探 Java Runtime.getRuntime()">
+<meta property="og:url" content="http://x-f1v3.github.io/blog/1621503785097.html">
 <meta property="og:site_name" content="F1v3&#39;s Notes">
-<meta property="og:description" content="当知道WIFI密码时，不需要直接连接WIFI，就可以抓取数据包">
+<meta property="og:description" content="在审计中，发现了如下代码">
 <meta property="og:locale" content="zh-Hans">
-<meta property="og:image" content="http://x-f1v3.github.io/images/1507603437995.png">
-<meta property="og:image" content="http://x-f1v3.github.io/images/1507603809852.png">
-<meta property="og:image" content="http://x-f1v3.github.io/images/1507604261098.png">
-<meta property="og:image" content="http://x-f1v3.github.io/images/1507604503916.png">
-<meta property="og:image" content="http://x-f1v3.github.io/images/1507604713429.png">
-<meta property="og:image" content="http://x-f1v3.github.io/images/1507604764354.png">
-<meta property="og:image" content="http://x-f1v3.github.io/images/1507604829814.png">
-<meta property="og:image" content="http://x-f1v3.github.io/images/1507604874447.png">
-<meta property="og:image" content="http://x-f1v3.github.io/images/1507612001366.png">
-<meta property="og:updated_time" content="2019-06-13T05:39:31.989Z">
+<meta property="og:image" content="http://x-f1v3.github.io/images/1621503843351.png">
+<meta property="og:image" content="http://x-f1v3.github.io/images/1621503849693.png">
+<meta property="og:image" content="http://x-f1v3.github.io/images/1621503857241.png">
+<meta property="og:image" content="http://x-f1v3.github.io/images/1621503864916.png">
+<meta property="og:image" content="http://x-f1v3.github.io/images/1621503874618.png">
+<meta property="og:image" content="http://x-f1v3.github.io/images/1621503883305.png">
+<meta property="og:updated_time" content="2021-05-20T09:47:23.049Z">
 <meta name="twitter:card" content="summary">
-<meta name="twitter:title" content="用Wireshark解密无线网络数据包">
-<meta name="twitter:description" content="当知道WIFI密码时，不需要直接连接WIFI，就可以抓取数据包">
-<meta name="twitter:image" content="http://x-f1v3.github.io/images/1507603437995.png">
+<meta name="twitter:title" content="探探 Java Runtime.getRuntime()">
+<meta name="twitter:description" content="在审计中，发现了如下代码">
+<meta name="twitter:image" content="http://x-f1v3.github.io/images/1621503843351.png">
 
-<link rel="canonical" href="http://x-f1v3.github.io/blog/用Wireshark解密无线网络数据包.html">
+<link rel="canonical" href="http://x-f1v3.github.io/blog/1621503785097.html">
 
 
 <script id="page-configurations">
@@ -58,7 +55,7 @@
   };
 </script>
 
-  <title>用Wireshark解密无线网络数据包 | F1v3's Notes</title>
+  <title>探探 Java Runtime.getRuntime() | F1v3's Notes</title>
   
 
 
@@ -199,7 +196,7 @@
   
   
   <article itemscope itemtype="http://schema.org/Article" class="post-block" lang="zh-Hans">
-    <link itemprop="mainEntityOfPage" href="http://x-f1v3.github.io/blog/用Wireshark解密无线网络数据包.html">
+    <link itemprop="mainEntityOfPage" href="http://x-f1v3.github.io/blog/1621503785097.html">
 
     <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
       <meta itemprop="image" content="/images/avatar.gif">
@@ -212,7 +209,7 @@
     </span>
       <header class="post-header">
         <h1 class="post-title" itemprop="name headline">
-          用Wireshark解密无线网络数据包
+          探探 Java Runtime.getRuntime()
         </h1>
 
         <div class="post-meta">
@@ -221,23 +218,17 @@
                 <i class="far fa-calendar"></i>
               </span>
               <span class="post-meta-item-text">Posted on</span>
+              
 
-              <time title="Created: 2017-10-10 10:35:24" itemprop="dateCreated datePublished" datetime="2017-10-10T10:35:24+08:00">2017-10-10</time>
+              <time title="Created: 2021-05-20 17:43:05 / Modified: 17:47:23" itemprop="dateCreated datePublished" datetime="2021-05-20T17:43:05+08:00">2021-05-20</time>
             </span>
-              <span class="post-meta-item">
-                <span class="post-meta-item-icon">
-                  <i class="far fa-calendar-check"></i>
-                </span>
-                <span class="post-meta-item-text">Edited on</span>
-                <time title="Modified: 2019-06-13 13:39:31" itemprop="dateModified" datetime="2019-06-13T13:39:31+08:00">2019-06-13</time>
-              </span>
             <span class="post-meta-item">
               <span class="post-meta-item-icon">
                 <i class="far fa-folder"></i>
               </span>
               <span class="post-meta-item-text">In</span>
                 <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
-                  <a href="/categories/无线/" itemprop="url" rel="index"><span itemprop="name">无线</span></a>
+                  <a href="/categories/Java代码审计/" itemprop="url" rel="index"><span itemprop="name">Java代码审计</span></a>
                 </span>
             </span>
 
@@ -254,7 +245,7 @@
                 <i class="far fa-file-word"></i>
               </span>
                 <span class="post-meta-item-text">Symbols count in article: </span>
-              <span>1.1k</span>
+              <span>1.6k</span>
             </span>
             <span class="post-meta-item" title="Reading time">
               <span class="post-meta-item-icon">
@@ -273,30 +264,33 @@
     <div class="post-body" itemprop="articleBody">
 
       
-        <p>当知道WIFI密码时，不需要直接连接WIFI，就可以抓取数据包<br><a id="more"></a></p>
-<h3 id="抓取数据包"><a href="#抓取数据包" class="headerlink" title="抓取数据包"></a>抓取数据包</h3><p>开启网卡的监听模式<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">airmon-ng start wlan0</span><br></pre></td></tr></table></figure></p>
-<p><img src="http://x-f1v3.github.io/images/1507603437995.png" alt="image"></p>
-<p>抓取指定AP的网络数据包<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">airodump-ng -c 11 -w xyw --bssid 36:DE:1A:98:F6:2A wlan0mon --output-format pcap</span><br></pre></td></tr></table></figure></p>
-<p>这里<code>--output-format</code>是输出文件的文件格式<br><img src="http://x-f1v3.github.io/images/1507603809852.png" alt="image"></p>
-<p><strong> 需要注意是，在抓的包中必须要有握手包，可以慢慢等，也可以进行洪水攻击 </strong></p>
-<p>使用洪水攻击使其掉线，然后抓握手包<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">aireplay-ng -0 10 -a 36:DE:1A:98:F6:2A  -c 14:F6:5A:A1:37:97 wlan0mon</span><br></pre></td></tr></table></figure></p>
-<p><img src="http://x-f1v3.github.io/images/1507604261098.png" alt="image"></p>
-<p>再等上一段时间，就停止抓包。</p>
-<h3 id="解密数据包"><a href="#解密数据包" class="headerlink" title="解密数据包"></a>解密数据包</h3><p>刚抓到的数据包用Wireshark打开的话，是看不到具体的东西的需要解密。</p>
-<p>打开Wireshark后，先在<code>Edit-&gt;preference-&gt;protocols-&gt;IEEE 802.11</code>中启动<code>Enable decryption</code><br><img src="http://x-f1v3.github.io/images/1507604503916.png" alt="image"></p>
-<p>然后点上<code>view-&gt;Wireless Toolbar</code>，就会在后面出现<code>Decryptions Keys</code><br><img src="http://x-f1v3.github.io/images/1507604713429.png" alt="image"></p>
-<p>点击这个<code>Decryptions Keys</code>，输入密码和SSID，然后点击apply,ok<br><img src="http://x-f1v3.github.io/images/1507604764354.png" alt="image"></p>
-<p>最后<code>view-&gt;reload</code>,就可以看到里面具体的数据了<br><img src="http://x-f1v3.github.io/images/1507604829814.png" alt="image"><br><img src="http://x-f1v3.github.io/images/1507604874447.png" alt="image"></p>
-<h3 id="命令行"><a href="#命令行" class="headerlink" title="命令行"></a>命令行</h3><p>可以使用命令行直接解包<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">wireshark -r xyw-02.cap -o wlan.enable_decryption:TRUE -o wlan.wep_key1:wpa-pwd:12345678:xyw</span><br></pre></td></tr></table></figure></p>
-<p><code>-r</code> 后面接要打开的数据包 <code>-o</code>参数是要改变preference里面的设置</p>
-<p><strong> 不过这是早期版本的Wireshark可以用 ，较新的版本里都不能使用</strong></p>
-<p>新版本可以试下<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">wireshark -r xyw-02.cap -o wlan.enable_decryption:TRUE -o &quot;uat:80211_keys:\&quot;wpa-pwd\&quot;,\&quot; 12345678:xyw\&quot;&quot;</span><br></pre></td></tr></table></figure></p>
-<p>自己测试是成功的</p>
-<p><img src="http://x-f1v3.github.io/images/1507612001366.png" alt="image"></p>
-<h3 id="参考"><a href="#参考" class="headerlink" title="参考"></a>参考</h3><ul>
-<li><a href="http://www.lovemytool.com/blog/2010/05/wireshark-and-tshark-decrypt-sample-capture-file-by-joke-snelders.html" target="_blank" rel="noopener">http://www.lovemytool.com/blog/2010/05/wireshark-and-tshark-decrypt-sample-capture-file-by-joke-snelders.html</a></li>
-<li><a href="https://wiki.wireshark.org/HowToDecrypt802.11" target="_blank" rel="noopener">https://wiki.wireshark.org/HowToDecrypt802.11</a></li>
-<li><a href="https://ask.wireshark.org/questions/24249/decrypt-wpa-with-tshark" target="_blank" rel="noopener">https://ask.wireshark.org/questions/24249/decrypt-wpa-with-tshark</a></li>
+        <p>在审计中，发现了如下代码<br><a id="more"></a></p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">String cmd = <span class="string">"ping -c 3 "</span> + ip;</span><br><span class="line">Process myProcess = Runtime.getRuntime().exec(cmd);</span><br></pre></td></tr></table></figure>
+<p>以为是妥妥的代码执行漏洞，结果各种尝试都不成功，白激动了，分析下未成功的原因。之前也看过了各位大佬的文章，但是等到自己遇到了，还是会掉到坑里，所以还是要亲自动手。</p>
+<h2 id="源码调试"><a href="#源码调试" class="headerlink" title="源码调试"></a>源码调试</h2><p>跟进调试，发现传入的字符串通过 <code>StringTokenizer</code> 分割成数组<br><img src="http://x-f1v3.github.io/images/1621503843351.png" alt="image"></p>
+<p>其中 <code>StringTokenizer</code> 的分割依据是 <code>\t\n\r\f</code><br><img src="http://x-f1v3.github.io/images/1621503849693.png" alt="image"></p>
+<p>之后调用到 <code>ProcessBuilder.start</code>,取出数组中除了第一个之外的元素都当作参数,并且把参数之间的空格之类的全部替换成 <code>\u0000</code><br><img src="http://x-f1v3.github.io/images/1621503857241.png" alt="image"></p>
+<p>最后是以命令数组的第一个元素作为命令，其他之后的元素统统作为参数来来执行命令<br><img src="http://x-f1v3.github.io/images/1621503864916.png" alt="image"></p>
+<p>当然最终多个命令没有执行成功<br>在用数组作为参数尝试，发现也是一样，并没有成功<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">String[] command = &#123; &quot;ping&quot;,&quot;-c 1 8.8.8.8&amp;&amp;ls&quot; &#125;;</span><br><span class="line">Process myProcess = Runtime.getRuntime().exec(cmd);</span><br></pre></td></tr></table></figure></p>
+<p>因为最终追到 <code>native</code> 方法，没有具体的处理方法，我之前的猜测是程序把第一个命令数组的元素作为命令，其他都作为纯字符串，类似于下面这样的：<br><img src="http://x-f1v3.github.io/images/1621503874618.png" alt="image"></p>
+<p>不过看到大佬的调试 <code>JVM</code>，最终原因是底层方法 <code>execvp</code> 直接处理特殊符号时，会报错。<br><img src="http://x-f1v3.github.io/images/1621503883305.png" alt="image"></p>
+<h2 id="解决方法"><a href="#解决方法" class="headerlink" title="解决方法"></a>解决方法</h2><p>现在的解决方法有2种，第一种是<br><figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">String command= <span class="string">"bash -c &#123;echo,ZWNobyAxMjMgJiYgZWNobyAxMjQ=&#125;|&#123;base64,-d&#125;|&#123;bash,-i&#125;"</span>;</span><br></pre></td></tr></table></figure></p>
+<p>第二种是<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">String[] command = &#123; &quot;/bin/bash&quot;,&quot;-c&quot;,&quot;ping -c 1 8.8.8.8&amp;&amp;ls&quot; &#125;;</span><br></pre></td></tr></table></figure></p>
+<p>都能顺利的执行多命令，可以看到都是以 <code>bash</code> 或者 <code>sh</code> 作为执行程序，真正要执行的命令作为参数，同时因为 <code>bash</code> 也提供了一个 <code>shell</code> 的上下文环境，所以连接命令的特殊字符也能得到正确解析。</p>
+<p>其中字符串和字符串数组的区别在于，当传入字符串时，会通过 <code>StringTokenizer</code> 帮你分割成字符串数组，而字符串数组则无需这步。所以当使用字符串时，由于 <code>StringTokenizer</code> 的分割会导致一些非预期的情况，命令执行无法成功.</p>
+<p>而我们也知道 <code>StringTokenizer</code> 主要根据 <code>\t\n\r\f</code> 来分割的，简单的说，只要不出现多余的空格，其实是和字符串数组的处理是一样的，第一种方法就是这种思路。<br>所以按照 <code>linux</code> 操作系统特性规避空格即可。类似的还有<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">String command = &quot;/bin/bash -c ping$&#123;IFS&#125;-c$&#123;IFS&#125;1$&#123;IFS&#125;8.8.8.8&amp;&amp;ls&quot;;</span><br></pre></td></tr></table></figure></p>
+<p>或者<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">sh -c $@ | sh . echo</span><br></pre></td></tr></table></figure></p>
+<h2 id="总结"><a href="#总结" class="headerlink" title="总结"></a>总结</h2><ol>
+<li>无论是字符串还是字符串数组，都不能直接传入多命令，需要把真正的命令作为 <code>/bin/bash</code> 的参数。</li>
+<li>传入字符串和传入字符串数组的区别在于字符串经过了 <code>StringTokenizer</code> 的处理，而字符串数组则跳过了这个分割数组的部分。</li>
+<li><p>类似于下面代码，不存在命令注入：</p>
+ <figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">String cmd = <span class="string">"可控"</span>;</span><br><span class="line">Runtime.getRuntime().exec(cmd);</span><br></pre></td></tr></table></figure>
+</li>
+</ol>
+<h2 id="参考文章"><a href="#参考文章" class="headerlink" title="参考文章"></a>参考文章</h2><ul>
+<li><a href="https://xz.aliyun.com/t/7046" target="_blank" rel="noopener">Java Runtime.getRuntime().exec由表及里</a></li>
+<li><a href="https://www.anquanke.com/post/id/159554" target="_blank" rel="noopener">奇淫技巧之突破Runtime.exec限制获取shell 命令执行环境</a></li>
+<li><a href="https://mp.weixin.qq.com/s/pzpc44-xH932M4eCJ8LxYg" target="_blank" rel="noopener">在 Runtime.getRuntime().exec(String cmd) 中执行任意shell命令的几种方法</a></li>
 </ul>
 
     </div>
@@ -308,7 +302,8 @@
       <footer class="post-footer">
           
           <div class="post-tags">
-              <a href="/tags/Wireshark/" rel="tag"><i class="fa fa-tag"></i> Wireshark</a>
+              <a href="/tags/Java/" rel="tag"><i class="fa fa-tag"></i> Java</a>
+              <a href="/tags/姿势/" rel="tag"><i class="fa fa-tag"></i> 姿势</a>
           </div>
 
         
@@ -317,13 +312,10 @@
         
     <div class="post-nav">
       <div class="post-nav-item">
-    <a href="/blog/1505536580617.html" rel="prev" title="ERROR Deployer not found: git hexo d 报错">
-      <i class="fa fa-chevron-left"></i> ERROR Deployer not found: git hexo d 报错
+    <a href="/blog/1620443190405.html" rel="prev" title="无依赖的Shiro反序列化利用">
+      <i class="fa fa-chevron-left"></i> 无依赖的Shiro反序列化利用
     </a></div>
-      <div class="post-nav-item">
-    <a href="/blog/1511748171281.html" rel="next" title="Centos搭建Weblogic容器">
-      Centos搭建Weblogic容器 <i class="fa fa-chevron-right"></i>
-    </a></div>
+      <div class="post-nav-item"></div>
     </div>
       </footer>
     
@@ -382,7 +374,7 @@
 
       <!--noindex-->
       <div class="post-toc-wrap sidebar-panel">
-          <div class="post-toc motion-element"><ol class="nav"><li class="nav-item nav-level-3"><a class="nav-link" href="#抓取数据包"><span class="nav-number">1.</span> <span class="nav-text">抓取数据包</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#解密数据包"><span class="nav-number">2.</span> <span class="nav-text">解密数据包</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#命令行"><span class="nav-number">3.</span> <span class="nav-text">命令行</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#参考"><span class="nav-number">4.</span> <span class="nav-text">参考</span></a></li></ol></div>
+          <div class="post-toc motion-element"><ol class="nav"><li class="nav-item nav-level-2"><a class="nav-link" href="#源码调试"><span class="nav-number">1.</span> <span class="nav-text">源码调试</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#解决方法"><span class="nav-number">2.</span> <span class="nav-text">解决方法</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#总结"><span class="nav-number">3.</span> <span class="nav-text">总结</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#参考文章"><span class="nav-number">4.</span> <span class="nav-text">参考文章</span></a></li></ol></div>
       </div>
       <!--/noindex-->
 
