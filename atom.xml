@@ -6,7 +6,7 @@
   <link href="/atom.xml" rel="self"/>
   
   <link href="http://x-f1v3.github.io/"/>
-  <updated>2021-05-20T09:47:23.049Z</updated>
+  <updated>2021-06-04T06:48:32.950Z</updated>
   <id>http://x-f1v3.github.io/</id>
   
   <author>
@@ -15,6 +15,30 @@
   </author>
   
   <generator uri="http://hexo.io/">Hexo</generator>
+  
+  <entry>
+    <title>VCenter Server RCE (CVE-2021-21985)</title>
+    <link href="http://x-f1v3.github.io//blog/1622788709768.html"/>
+    <id>http://x-f1v3.github.io//blog/1622788709768.html</id>
+    <published>2021-06-04T06:38:29.000Z</published>
+    <updated>2021-06-04T06:48:32.950Z</updated>
+    
+    <content type="html"><![CDATA[<p>漏洞触发的原理比较直接，在 <code>com.vmware.vsan.client.services.ProxygenController</code> 中可以反射任意 <code>bean</code> 的任意方法：<br><a id="more"></a><br><img src="http://x-f1v3.github.io/images/1622788737176.png" alt="image"></p><p>主要是利用的问题，有公开了一个<a href="https://www.iswin.org/2021/06/02/Vcenter-Server-CVE-2021-21985-RCE-PAYLOAD/" target="_blank" rel="noopener">利用方法</a>，学习一下，文章中的类和方法是 <code>&amp;vsanProviderUtils_setVmodlHelper/</code> 和 <code>setTargetObject</code>，经过一通寻找，最终发现是和 <code>org.springframework.beans.factory.config.MethodInvokingBean</code> 等有关：<br><img src="http://x-f1v3.github.io/images/1622788764161.png" alt="image"></p><p>进该类看下，发现最终是继承 <code>org.springframework.util.MethodInvoker</code> 的，在其中有 <code>setTargetObject</code>、<code>setTargetMethod</code>、<code>setTargetClass</code>、<code>setArguments</code>、<code>prepare</code> 方法，设置反射所必需的条件，最后还有个 <code>invoke</code> 方法，可以调用任意类的任意静态方法 ：<br><img src="http://x-f1v3.github.io/images/1622788785935.png" alt="image"></p><p>非常完美，唯一有些遗憾的是必须是静态方法。在文章中使用的是 <code>javax.naming.InitialContext.doLookup</code> 进行 <code>JNDI</code> 利用，达到 RCE：<br><img src="http://x-f1v3.github.io/images/1622788794333.png" alt="image"></p><p>学习了这个利用链，可以作为 <code>Spring bean RCE</code> 的利用链之一。</p>]]></content>
+    
+    <summary type="html">
+    
+      &lt;p&gt;漏洞触发的原理比较直接，在 &lt;code&gt;com.vmware.vsan.client.services.ProxygenController&lt;/code&gt; 中可以反射任意 &lt;code&gt;bean&lt;/code&gt; 的任意方法：&lt;br&gt;
+    
+    </summary>
+    
+      <category term="漏洞利用" scheme="http://x-f1v3.github.io/categories/%E6%BC%8F%E6%B4%9E%E5%88%A9%E7%94%A8/"/>
+    
+    
+      <category term="Java" scheme="http://x-f1v3.github.io/tags/Java/"/>
+    
+      <category term="姿势" scheme="http://x-f1v3.github.io/tags/%E5%A7%BF%E5%8A%BF/"/>
+    
+  </entry>
   
   <entry>
     <title>探探 Java Runtime.getRuntime()</title>
@@ -154,13 +178,13 @@
       <category term="漏洞分析" scheme="http://x-f1v3.github.io/categories/%E6%BC%8F%E6%B4%9E%E5%88%86%E6%9E%90/"/>
     
     
+      <category term="Weblogic" scheme="http://x-f1v3.github.io/tags/Weblogic/"/>
+    
       <category term="Java" scheme="http://x-f1v3.github.io/tags/Java/"/>
     
       <category term="漏洞" scheme="http://x-f1v3.github.io/tags/%E6%BC%8F%E6%B4%9E/"/>
     
       <category term="反序列化" scheme="http://x-f1v3.github.io/tags/%E5%8F%8D%E5%BA%8F%E5%88%97%E5%8C%96/"/>
-    
-      <category term="Weblogic" scheme="http://x-f1v3.github.io/tags/Weblogic/"/>
     
   </entry>
   
@@ -182,13 +206,13 @@
       <category term="漏洞分析" scheme="http://x-f1v3.github.io/categories/%E6%BC%8F%E6%B4%9E%E5%88%86%E6%9E%90/"/>
     
     
+      <category term="Weblogic" scheme="http://x-f1v3.github.io/tags/Weblogic/"/>
+    
       <category term="Java" scheme="http://x-f1v3.github.io/tags/Java/"/>
     
       <category term="漏洞" scheme="http://x-f1v3.github.io/tags/%E6%BC%8F%E6%B4%9E/"/>
     
       <category term="反序列化" scheme="http://x-f1v3.github.io/tags/%E5%8F%8D%E5%BA%8F%E5%88%97%E5%8C%96/"/>
-    
-      <category term="Weblogic" scheme="http://x-f1v3.github.io/tags/Weblogic/"/>
     
   </entry>
   
@@ -210,13 +234,13 @@
       <category term="漏洞分析" scheme="http://x-f1v3.github.io/categories/%E6%BC%8F%E6%B4%9E%E5%88%86%E6%9E%90/"/>
     
     
+      <category term="Weblogic" scheme="http://x-f1v3.github.io/tags/Weblogic/"/>
+    
       <category term="Java" scheme="http://x-f1v3.github.io/tags/Java/"/>
     
       <category term="漏洞" scheme="http://x-f1v3.github.io/tags/%E6%BC%8F%E6%B4%9E/"/>
     
       <category term="反序列化" scheme="http://x-f1v3.github.io/tags/%E5%8F%8D%E5%BA%8F%E5%88%97%E5%8C%96/"/>
-    
-      <category term="Weblogic" scheme="http://x-f1v3.github.io/tags/Weblogic/"/>
     
   </entry>
   
@@ -240,9 +264,9 @@
     
       <category term="Java" scheme="http://x-f1v3.github.io/tags/Java/"/>
     
-      <category term="反序列化" scheme="http://x-f1v3.github.io/tags/%E5%8F%8D%E5%BA%8F%E5%88%97%E5%8C%96/"/>
-    
       <category term="代码审计" scheme="http://x-f1v3.github.io/tags/%E4%BB%A3%E7%A0%81%E5%AE%A1%E8%AE%A1/"/>
+    
+      <category term="反序列化" scheme="http://x-f1v3.github.io/tags/%E5%8F%8D%E5%BA%8F%E5%88%97%E5%8C%96/"/>
     
   </entry>
   
@@ -484,28 +508,6 @@
       <category term="Java" scheme="http://x-f1v3.github.io/tags/Java/"/>
     
       <category term="代码审计" scheme="http://x-f1v3.github.io/tags/%E4%BB%A3%E7%A0%81%E5%AE%A1%E8%AE%A1/"/>
-    
-  </entry>
-  
-  <entry>
-    <title>Linux虚拟机使用主机shadowsocks代理上网</title>
-    <link href="http://x-f1v3.github.io//blog/1520349399715.html"/>
-    <id>http://x-f1v3.github.io//blog/1520349399715.html</id>
-    <published>2018-03-06T15:16:39.000Z</published>
-    <updated>2019-06-13T05:43:31.491Z</updated>
-    
-    <content type="html"><![CDATA[<p>无意中发现虚拟机也能通过shadowsocks代理上网，而且非常方便，尝试了一波<br><a id="more"></a></p><h3 id="0x01-查看本机IP"><a href="#0x01-查看本机IP" class="headerlink" title="0x01 查看本机IP"></a>0x01 查看本机IP</h3><p><code>ipconfig</code>,找到主机的IP<br><img src="http://x-f1v3.github.io/images/1520350003892.png" alt="image"><br>我这里使用的wifi，所以显示的是局域网地址，总之，能<code>ping</code>通就行。</p><h3 id="0x02-查看SS本地端口"><a href="#0x02-查看SS本地端口" class="headerlink" title="0x02 查看SS本地端口"></a>0x02 查看SS本地端口</h3><p>接下来就是连上SS，然后查看本地端口（默认是1080），我这里是<code>1081</code><br><img src="http://x-f1v3.github.io/images/1520351125422.png" alt="image"></p><h3 id="0x03-允许SS来自局域网的连接"><a href="#0x03-允许SS来自局域网的连接" class="headerlink" title="0x03  允许SS来自局域网的连接"></a>0x03  允许SS来自局域网的连接</h3><p><img src="http://x-f1v3.github.io/images/1520351208941.png" alt="image"></p><h3 id="0x04-虚拟机设成NAT模式"><a href="#0x04-虚拟机设成NAT模式" class="headerlink" title="0x04 虚拟机设成NAT模式"></a>0x04 虚拟机设成NAT模式</h3><p><img src="http://x-f1v3.github.io/images/1520351381763.png" alt="image"></p><h3 id="0x05-进入系统设置代理"><a href="#0x05-进入系统设置代理" class="headerlink" title="0x05 进入系统设置代理"></a>0x05 进入系统设置代理</h3><p><img src="http://x-f1v3.github.io/images/1520351509007.png" alt="image"></p><h3 id="0x06-成功代理"><a href="#0x06-成功代理" class="headerlink" title="0x06 成功代理"></a>0x06 成功代理</h3><p><img src="http://x-f1v3.github.io/images/1520351585870.png" alt="image"></p><h3 id="参考链接"><a href="#参考链接" class="headerlink" title="参考链接"></a>参考链接</h3><ul><li><a href="http://blog.csdn.net/zzl1243976730/article/details/63695131" target="_blank" rel="noopener">http://blog.csdn.net/zzl1243976730/article/details/63695131</a></li><li><a href="http://blog.csdn.net/u010726042/article/details/53187937" target="_blank" rel="noopener">http://blog.csdn.net/u010726042/article/details/53187937</a></li></ul>]]></content>
-    
-    <summary type="html">
-    
-      &lt;p&gt;无意中发现虚拟机也能通过shadowsocks代理上网，而且非常方便，尝试了一波&lt;br&gt;
-    
-    </summary>
-    
-      <category term="日常姿势" scheme="http://x-f1v3.github.io/categories/%E6%97%A5%E5%B8%B8%E5%A7%BF%E5%8A%BF/"/>
-    
-    
-      <category term="日常" scheme="http://x-f1v3.github.io/tags/%E6%97%A5%E5%B8%B8/"/>
     
   </entry>
   
