@@ -3,13 +3,14 @@
   <entry>
     <title><![CDATA[VCenter Server RCE (CVE-2021-21985)]]></title>
     <url>%2F%2Fblog%2F1622788709768.html</url>
-    <content type="text"><![CDATA[漏洞触发的原理比较直接，在 com.vmware.vsan.client.services.ProxygenController 中可以反射任意 bean 的任意方法： 主要是利用的问题，有公开了一个利用方法，学习一下，文章中的类和方法是 &amp;vsanProviderUtils_setVmodlHelper/ 和 setTargetObject，经过一通寻找，最终发现是和 org.springframework.beans.factory.config.MethodInvokingBean 等有关： 进该类看下，发现最终是继承 org.springframework.util.MethodInvoker 的，在其中有 setTargetObject、setTargetMethod、setTargetClass、setArguments、prepare 方法，设置反射所必需的条件，最后还有个 invoke 方法，可以调用任意类的任意静态方法 ： 非常完美，唯一有些遗憾的是必须是静态方法。在文章中使用的是 javax.naming.InitialContext.doLookup 进行 JNDI 利用，达到 RCE： 学习了这个利用链，可以作为 Spring bean RCE 的利用链之一。]]></content>
+    <content type="text"><![CDATA[漏洞触发的原理比较直接，在 com.vmware.vsan.client.services.ProxygenController 中可以反射任意 bean 的任意方法： 主要是利用的问题，有公开了一个利用方法，学习一下，文章中的类和方法是 &amp;vsanProviderUtils_setVmodlHelper/ 和 setTargetObject，经过一通寻找，最终发现是和 org.springframework.beans.factory.config.MethodInvokingBean 等有关： 进该类看下，发现最终是继承 org.springframework.util.MethodInvoker 的，在其中有 setTargetObject、setTargetMethod、setTargetClass、setArguments、prepare 方法，设置反射所必需的条件，最后还有个 invoke 方法，可以调用任意类的任意静态方法 ： 非常完美，唯一有些遗憾的是必须是静态方法。在文章中使用的是 javax.naming.InitialContext.doLookup 进行 JNDI 利用，达到 RCE： 学习了这个利用链，可以作为 Spring bean RCE 的利用链之一。 之后又公开了另一种利用方式，在 com.vmware.vim.vmomi.core.types.impl.VmodContextImpl 类中的 loadVmodlPackage 方法： 其中 NonValidatingClassPathXmlApplicationContext 是继承 ClassPathXmlApplicationContext 并调用了其构造方法，导致的远程加载 xml 文件找造成 Spel RCE: （之前走马观花看到过这个类，给忽略了。。。居然没发现） 当然，文章中的回显思路也是很赞的，利用一个回显的 SSRF，返回 xml 内容，并利用 ClassPathXmlApplicationContext 解析，最后将结果放到 System Properties 存储，第二个请求，则将 System Properties 的内容输出，以达到回显的目的，盗一张图： 还有一种方法，这种方法和第一种方法的点是一样的，但是利用点不同，这是利用 org.eclipse.jdt.internal.compiler.parser.Parser类的 buildFileForTable 方法直接写 class： 然后使用 java.lang.System 的 load 方法调用该类（貌似这个类还不是普通的类）： 文中还有一种方法，使用 jdk.jfr.internal.Utils 类中的 writeGeneratedASM 方法写 class: 之前还需利用 java.lang.System.setProperty() 修改 SAVE_GENERATED 的值 最后是作者的 Github 学习了很多，点也不难，但是要找利用链，确实太耗时间了…]]></content>
       <categories>
         <category>漏洞利用</category>
       </categories>
       <tags>
         <tag>Java</tag>
         <tag>姿势</tag>
+        <tag>POC</tag>
       </tags>
   </entry>
   <entry>

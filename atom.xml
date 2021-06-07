@@ -6,7 +6,7 @@
   <link href="/atom.xml" rel="self"/>
   
   <link href="http://x-f1v3.github.io/"/>
-  <updated>2021-06-04T06:48:32.950Z</updated>
+  <updated>2021-06-07T06:57:58.224Z</updated>
   <id>http://x-f1v3.github.io/</id>
   
   <author>
@@ -21,9 +21,9 @@
     <link href="http://x-f1v3.github.io//blog/1622788709768.html"/>
     <id>http://x-f1v3.github.io//blog/1622788709768.html</id>
     <published>2021-06-04T06:38:29.000Z</published>
-    <updated>2021-06-04T06:48:32.950Z</updated>
+    <updated>2021-06-07T06:57:58.224Z</updated>
     
-    <content type="html"><![CDATA[<p>漏洞触发的原理比较直接，在 <code>com.vmware.vsan.client.services.ProxygenController</code> 中可以反射任意 <code>bean</code> 的任意方法：<br><a id="more"></a><br><img src="http://x-f1v3.github.io/images/1622788737176.png" alt="image"></p><p>主要是利用的问题，有公开了一个<a href="https://www.iswin.org/2021/06/02/Vcenter-Server-CVE-2021-21985-RCE-PAYLOAD/" target="_blank" rel="noopener">利用方法</a>，学习一下，文章中的类和方法是 <code>&amp;vsanProviderUtils_setVmodlHelper/</code> 和 <code>setTargetObject</code>，经过一通寻找，最终发现是和 <code>org.springframework.beans.factory.config.MethodInvokingBean</code> 等有关：<br><img src="http://x-f1v3.github.io/images/1622788764161.png" alt="image"></p><p>进该类看下，发现最终是继承 <code>org.springframework.util.MethodInvoker</code> 的，在其中有 <code>setTargetObject</code>、<code>setTargetMethod</code>、<code>setTargetClass</code>、<code>setArguments</code>、<code>prepare</code> 方法，设置反射所必需的条件，最后还有个 <code>invoke</code> 方法，可以调用任意类的任意静态方法 ：<br><img src="http://x-f1v3.github.io/images/1622788785935.png" alt="image"></p><p>非常完美，唯一有些遗憾的是必须是静态方法。在文章中使用的是 <code>javax.naming.InitialContext.doLookup</code> 进行 <code>JNDI</code> 利用，达到 RCE：<br><img src="http://x-f1v3.github.io/images/1622788794333.png" alt="image"></p><p>学习了这个利用链，可以作为 <code>Spring bean RCE</code> 的利用链之一。</p>]]></content>
+    <content type="html"><![CDATA[<p>漏洞触发的原理比较直接，在 <code>com.vmware.vsan.client.services.ProxygenController</code> 中可以反射任意 <code>bean</code> 的任意方法：<br><a id="more"></a><br><img src="http://x-f1v3.github.io/images/1622788737176.png" alt="image"></p><p>主要是利用的问题，有公开了一个<a href="https://www.iswin.org/2021/06/02/Vcenter-Server-CVE-2021-21985-RCE-PAYLOAD/" target="_blank" rel="noopener">利用方法</a>，学习一下，文章中的类和方法是 <code>&amp;vsanProviderUtils_setVmodlHelper/</code> 和 <code>setTargetObject</code>，经过一通寻找，最终发现是和 <code>org.springframework.beans.factory.config.MethodInvokingBean</code> 等有关：<br><img src="http://x-f1v3.github.io/images/1622788764161.png" alt="image"></p><p>进该类看下，发现最终是继承 <code>org.springframework.util.MethodInvoker</code> 的，在其中有 <code>setTargetObject</code>、<code>setTargetMethod</code>、<code>setTargetClass</code>、<code>setArguments</code>、<code>prepare</code> 方法，设置反射所必需的条件，最后还有个 <code>invoke</code> 方法，可以调用任意类的任意静态方法 ：<br><img src="http://x-f1v3.github.io/images/1622788785935.png" alt="image"></p><p>非常完美，唯一有些遗憾的是必须是静态方法。在文章中使用的是 <code>javax.naming.InitialContext.doLookup</code> 进行 <code>JNDI</code> 利用，达到 RCE：<br><img src="http://x-f1v3.github.io/images/1622788794333.png" alt="image"></p><p>学习了这个利用链，可以作为 <code>Spring bean RCE</code> 的利用链之一。</p><p> 之后又公开了另一种<a href="http://noahblog.360.cn/vcenter-cve-2021-2021-21985/" target="_blank" rel="noopener">利用方式</a>，在 <code>com.vmware.vim.vmomi.core.types.impl.VmodContextImpl</code> 类中的 <code>loadVmodlPackage</code> 方法：<br><img src="http://x-f1v3.github.io/images/1623048920545.png" alt="image"></p><p>其中 <code>NonValidatingClassPathXmlApplicationContext</code> 是继承 <code>ClassPathXmlApplicationContext</code> 并调用了其构造方法，导致的远程加载 <code>xml</code> 文件找造成 <code>Spel RCE</code>:<br><img src="http://x-f1v3.github.io/images/1623048967538.png" alt="image"></p><p>（之前走马观花看到过这个类，给忽略了。。。居然没发现）</p><p>当然，文章中的回显思路也是很赞的，利用一个回显的 SSRF，返回 <code>xml</code> 内容，并利用 <code>ClassPathXmlApplicationContext</code> 解析，最后将结果放到 <code>System Properties</code> 存储，第二个请求，则将 <code>System Properties</code> 的内容输出，以达到回显的目的，盗一张图：<br><img src="http://x-f1v3.github.io/images/1623048993497.png" alt="image"></p><p>还有一种<a href="https://testbnull.medium.com/a-quick-look-at-cve-2021-21985-vcenter-pre-auth-rce-9ecd459150a5" target="_blank" rel="noopener">方法</a>，这种方法和第一种方法的点是一样的，但是利用点不同，这是利用 <code>org.eclipse.jdt.internal.compiler.parser.Parser</code>类的 <code>buildFileForTable</code> 方法直接写  <code>class</code>：<br><img src="http://x-f1v3.github.io/images/1623049003199.png" alt="image"></p><p>然后使用 <code>java.lang.System</code> 的 <code>load</code> 方法调用该类（貌似这个类还不是普通的类）：<br><img src="http://x-f1v3.github.io/images/1623049014091.png" alt="image"></p><p>文中还有一种方法，使用 <code>jdk.jfr.internal.Utils</code> 类中的 <code>writeGeneratedASM</code> 方法写 <code>class</code>:<br><img src="http://x-f1v3.github.io/images/1623049022866.png" alt="image"></p><p>之前还需利用 <code>java.lang.System.setProperty()</code> 修改 <code>SAVE_GENERATED</code> 的值</p><p>最后是作者的 <a href="https://github.com/testanull/Project_CVE-2021-21985_PoC" target="_blank" rel="noopener">Github</a></p><p>学习了很多，点也不难，但是要找利用链，确实太耗时间了…</p>]]></content>
     
     <summary type="html">
     
@@ -37,6 +37,8 @@
       <category term="Java" scheme="http://x-f1v3.github.io/tags/Java/"/>
     
       <category term="姿势" scheme="http://x-f1v3.github.io/tags/%E5%A7%BF%E5%8A%BF/"/>
+    
+      <category term="POC" scheme="http://x-f1v3.github.io/tags/POC/"/>
     
   </entry>
   
