@@ -6,7 +6,7 @@
   <link href="/atom.xml" rel="self"/>
   
   <link href="http://x-f1v3.github.io/"/>
-  <updated>2021-07-13T05:22:10.719Z</updated>
+  <updated>2021-07-29T05:41:14.616Z</updated>
   <id>http://x-f1v3.github.io/</id>
   
   <author>
@@ -15,6 +15,30 @@
   </author>
   
   <generator uri="http://hexo.io/">Hexo</generator>
+  
+  <entry>
+    <title>Weblogic反序列化漏洞分析（CVE-2021-2394）</title>
+    <link href="http://x-f1v3.github.io//blog/1627537078445.html"/>
+    <id>http://x-f1v3.github.io//blog/1627537078445.html</id>
+    <published>2021-07-29T05:37:58.000Z</published>
+    <updated>2021-07-29T05:41:14.616Z</updated>
+    
+    <content type="html"><![CDATA[<p>Weblogic反序列化漏洞分析<br><a id="more"></a><br>重点在 <code>oracle.eclipselink.coherence.integrated.internal.querying.FilterExtractor</code> 这个类，其中有 <code>readExternal</code> 方法，可以对 <code>attributeAccessor</code> 就进行赋值：<br><img src="http://x-f1v3.github.io/images/1627537112077.png" alt="image"></p><p>这个 <code>AttributeAccessor</code> 类我们很熟悉了，就是之前的 <code>CVE-2020-14841</code> 就已经用到了。接着，跟进到 <code>SerializationHelper.readAttributeAccessor</code>,重新组建 <code>AttributeAccessor</code> 类：<br><img src="http://x-f1v3.github.io/images/1627537120556.png" alt="image"></p><p>这里有个坑，就是没有调用到 <code>setIsWriteOnly</code> 方法，所以之后的执行到 <code>MethodAttributeAccessor.initializeAttributes</code> 会有点小问题，这之后会提到。</p><p>在看到 <code>FilterExtractor</code> 的 <code>extract</code> 方法：<br><img src="http://x-f1v3.github.io/images/1627537131442.png" alt="image"></p><p>先执行 <code>attributeAccessor.initializeAttributes(obj.getClass())</code>:<br><img src="http://x-f1v3.github.io/images/1627537142365.png" alt="image"></p><p>这里就是上面的坑点，由于 <code>MethodAttributeAccessor</code> 是通过反序列化重构的，不像 <code>CVE-2020-14841</code> 通过反射直接插入，所以无法修改 <code>IsWriteOnly</code> 的值。所以这里就必须进入 <code>if</code>,且 <code>GetMethod</code> 和 <code>SetMethod</code> 必须有关联.这里的关联是获取 <code>GetMethod</code> 方法的返回类型，然后传入 <code>SetMethod</code> 方法参数中，所以这里直接套用 <code>CVE-2020-14841</code> 的利用方式是不行的：<br><img src="http://x-f1v3.github.io/images/1627537157211.png" alt="image"></p><p>最后执行到 <code>this.attributeAccessor.getAttributeValueFromObject(obj)</code>,就是单纯的无参方法反射执行了：<br><img src="http://x-f1v3.github.io/images/1627537167207.png" alt="image"></p><p>其实可以看出，后半段的执行方法和 <code>CVE-2020-14841</code> 几乎一样，除了坑点那里稍做修改，可以利用 <code>setConnection</code> 和 <code>connect</code> 方法绕一下。</p><p>再来看前半段，有调用到 <code>extract</code> 方法，可以直接用到 <code>CVE-2020-14756</code> 的前半段的方式，这个之前分析过，就不再多说了。</p><p>还有最后一点，因为最新的补丁在 T3 反序列化上是用了白名单，所以走 T3 协议不会成功：<br><img src="http://x-f1v3.github.io/images/1627537176860.png" alt="image"></p><p>只能走 IIOP：<br><img src="http://x-f1v3.github.io/images/1627537184802.png" alt="image"></p><p>总结一下，这个漏洞其实是多个先前漏洞的组合利用，找到了替代之前黑名单的类，关键还是在 <code>MethodAttributeAccessor</code> 的调用，可以找找其他类中有调用 <code>MethodAttributeAccessor</code> 的地方。</p>]]></content>
+    
+    <summary type="html">
+    
+      &lt;p&gt;Weblogic反序列化漏洞分析&lt;br&gt;
+    
+    </summary>
+    
+      <category term="漏洞分析" scheme="http://x-f1v3.github.io/categories/%E6%BC%8F%E6%B4%9E%E5%88%86%E6%9E%90/"/>
+    
+    
+      <category term="Weblogic" scheme="http://x-f1v3.github.io/tags/Weblogic/"/>
+    
+      <category term="反序列化" scheme="http://x-f1v3.github.io/tags/%E5%8F%8D%E5%BA%8F%E5%88%97%E5%8C%96/"/>
+    
+  </entry>
   
   <entry>
     <title>Weblogic反序列化漏洞分析（CVE-2021-2135）</title>
@@ -486,30 +510,6 @@
       <category term="SpringBoot" scheme="http://x-f1v3.github.io/tags/SpringBoot/"/>
     
       <category term="上传" scheme="http://x-f1v3.github.io/tags/%E4%B8%8A%E4%BC%A0/"/>
-    
-  </entry>
-  
-  <entry>
-    <title>idea打包jar报Error: Invalid or corrupt jarfile</title>
-    <link href="http://x-f1v3.github.io//blog/1539757907171.html"/>
-    <id>http://x-f1v3.github.io//blog/1539757907171.html</id>
-    <published>2018-10-17T06:31:47.000Z</published>
-    <updated>2019-06-13T05:35:46.342Z</updated>
-    
-    <content type="html"><![CDATA[<p>用idea将springboot web项目打包成 jar包的时候,百度了几遍文章，也按照文章做了，最后也生成了Jar包，但是最后运行的时候，却报错：<br><a id="more"></a><br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">Error: Invalid or corrupt jarfile XX.jar</span><br></pre></td></tr></table></figure></p><p>最后也解决了，下面就在复现一下，记下自己容易疏忽的步骤。</p><p>1、<br>选择 File -&gt; Project Structure<br><img src="http://x-f1v3.github.io/images/1539758346327.png" alt="image"></p><p>2、<br>选择 Artifacts-&gt;JAR-&gt;From modules with dependencies<br><img src="http://x-f1v3.github.io/images/1539758467288.png" alt="image"></p><p>3、<br>选择启动类<br>选择 copy to the output directory and link via manifest-&gt;OK<br><strong>最重要的是 META-INF  默认放到 src\main\java 目录里，如果使用默认值，没有进行其他配置，生成的 jar 有可能不会包含 META-INF 目录，导致运行 jar 出错 。</strong> 所以，META-INF要放在<code>src\main\resources</code> 目录下。<br>这也是报<code>Error: Invalid or corrupt jarfile</code>的原因。<br><img src="http://x-f1v3.github.io/images/1539758998936.png" alt="image"></p><p>4、<br>查看或者修改生成的Jar包名字和路径<br><img src="http://x-f1v3.github.io/images/1539759080756.png" alt="image"></p><p>5、<br>选择Build -&gt; Build Artifacts<br><img src="http://x-f1v3.github.io/images/1539759635329.png" alt="image"></p><p>然后 build 即可<br><img src="http://x-f1v3.github.io/images/1539759703034.png" alt="image"></p><p>6、<br>最后在项目的目录里会生出对应的Jar包<br><img src="http://x-f1v3.github.io/images/1539760070181.png" alt="image"></p><p>7、<br>进到对应的目录，执行命令即可<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">java -jar xx.jar</span><br></pre></td></tr></table></figure></p><p><img src="http://x-f1v3.github.io/images/1539760153635.png" alt="image"></p>]]></content>
-    
-    <summary type="html">
-    
-      &lt;p&gt;用idea将springboot web项目打包成 jar包的时候,百度了几遍文章，也按照文章做了，最后也生成了Jar包，但是最后运行的时候，却报错：&lt;br&gt;
-    
-    </summary>
-    
-      <category term="解决报错" scheme="http://x-f1v3.github.io/categories/%E8%A7%A3%E5%86%B3%E6%8A%A5%E9%94%99/"/>
-    
-    
-      <category term="Java" scheme="http://x-f1v3.github.io/tags/Java/"/>
-    
-      <category term="SpringBoot" scheme="http://x-f1v3.github.io/tags/SpringBoot/"/>
     
   </entry>
   
